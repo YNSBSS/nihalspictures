@@ -132,18 +132,18 @@ const ServicesManagement = () => {
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
-      formData.append('folder', 'services');
+formData.append('file', file);
+formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+formData.append('folder', 'services');
 
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+const response = await fetch(
+  `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+  {
+    method: 'POST',
+    body: formData,
+  }
+);
+
 
       if (!response.ok) {
         throw new Error('Upload failed');

@@ -313,17 +313,16 @@ const PhotographyBookingSystem = () => {
           <ModernCarousel />
         </div>
       </section>
-
       {/* Services Section */}
       <section className="mnphoto-services-section">
         <div className="mnphoto-section-container">
           <h2 className="mnphoto-section-title">Nos Services</h2>
           <div className="mnphoto-services-grid">
-            {servicePackages.map(pkg => (
+            {servicePackages.filter(pkg => pkg.isActive !== false).map(pkg => (
               <div key={pkg.id} className="mnphoto-service-card">
                 <div className="mnphoto-service-image">
                   <img 
-                    src={pkg.image || logo} 
+                    src={pkg.imageUrl || logo} 
                     alt={pkg.name}
                     className="mnphoto-service-img"
                   />
@@ -331,6 +330,11 @@ const PhotographyBookingSystem = () => {
                     <div className="mnphoto-service-price">
                       {pkg.price?.toLocaleString()} DZD
                     </div>
+                    {pkg.serviceNumber && (
+                      <div className="mnphoto-service-number">
+                        #{pkg.serviceNumber}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="mnphoto-service-content">
@@ -340,6 +344,21 @@ const PhotographyBookingSystem = () => {
                     <span>{pkg.duration}</span>
                   </div>
                   <p className="mnphoto-service-description">{pkg.description}</p>
+                  
+                  {pkg.features && pkg.features.length > 0 && (
+                    <div className="mnphoto-service-features">
+                      <h4>Inclus dans ce forfait :</h4>
+                      <ul className="mnphoto-features-list">
+                        {pkg.features.map((feature, index) => (
+                          <li key={index} className="mnphoto-feature-item">
+                            <CheckCircle className="mnphoto-feature-icon" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
                   <button 
                     className="mnphoto-service-select-btn"
                     onClick={() => setBookingForm(prev => ({ ...prev, packName: pkg.name }))}

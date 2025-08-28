@@ -33,7 +33,7 @@ const BookingsManagement = () => {
   const voucherRef = useRef(null);
 
   const statusOptions = [
-    { value: 'En Attente', label: 'Requested', color: '#f59e0b' },
+    { value: 'Requested', label: 'Requested', color: '#f59e0b' },
     { value: 'confirmed', label: 'Confirmed', color: '#3b82f6' },
     { value: 'in-progress', label: 'In Progress', color: '#8b5cf6' },
     { value: 'completed', label: 'Completed', color: '#10b981' },
