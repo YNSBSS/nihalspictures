@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Search, Filter, MoreVertical, Eye, Edit, Trash2, Check, X, Clock, Phone, Mail, MapPin, Camera, DollarSign, MessageSquare, Download, RefreshCw, Plus, CreditCard, Receipt, TrendingUp, ArrowUpDown, Printer, FileText } from 'lucide-react';
+import { Calendar, Search, Eye, Edit, Trash2, X, Clock, Phone, Mail, MapPin, Camera, DollarSign, Download, RefreshCw, CreditCard, Receipt, ArrowUpDown, Printer, FileText } from 'lucide-react';
 import { collection, onSnapshot, query, orderBy, updateDoc, deleteDoc, doc, addDoc, getDocs, where } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import './BookingsManagement.css';
@@ -147,6 +147,8 @@ const BookingsManagement = () => {
             return bookingDate >= today && bookingDate <= filterDate;
           });
           break;
+          default:
+            break;
       }
     }
 
@@ -922,7 +924,7 @@ const downloadVoucherPDF = async () => {
                 </button>
                 <button onClick={downloadVoucherPDF} className="ebms-pdf-btn">
                   <FileText className="ebms-btn-icon" />
-                  Print as PDF
+                  PDF
                 </button>
                 <button onClick={() => setShowVoucherModal(false)} className="ebms-close-btn">
                   <X className="ebms-close-icon" />

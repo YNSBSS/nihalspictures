@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Search, Plus, Edit, Trash2, X, Clock, DollarSign, FileText, Save, AlertCircle, CheckCircle, RefreshCw, Upload, Image as ImageIcon } from 'lucide-react';
+import { Camera, Search, Plus, Edit, Trash2, X, Clock, DollarSign, FileText, Save, AlertCircle, CheckCircle, RefreshCw, Upload  } from 'lucide-react';
 import { collection, onSnapshot, query, orderBy, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import './ServicesManagement.css';

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Calendar, Camera, Users, Settings, Menu, X, Bell, TrendingUp, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, LogOut, DollarSign, CreditCard, TrendingDown } from 'lucide-react';
+import { LayoutDashboard, Calendar, Camera, Menu, X, Bell, TrendingUp, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, LogOut, DollarSign, TrendingDown } from 'lucide-react';
 import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from './firebaseConfig';
 import { getDocs } from "firebase/firestore";
-
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import logo from './logo.jpg';
+import { Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import BookingsManagement from './BookingsManagement';
 import ServicesManagement from './ServicesManagement';
 import './AdminDashboard.css';
@@ -292,7 +292,7 @@ const AdminDashboard = () => {
       <div className="mn-dash-auth-container">
         <div className="mn-dash-auth-card">
           <div className="mn-dash-auth-header">
-            <Camera className="mn-dash-auth-icon" />
+              <img src={logo} alt="mn-photo" style={{width:'80px',borderRadius:"40%"}} />
             <h1>MN-PHOTO Admin</h1>
             <p>Connectez-vous pour accéder au tableau de bord</p>
           </div>
@@ -659,7 +659,7 @@ const AdminDashboard = () => {
         <div className="mn-dash-sidebar-header">
           {sidebarOpen && (
             <div className="mn-dash-brand">
-              <Camera className="mn-dash-brand-icon" />
+              <img src={logo} alt="mn-photo" style={{width:'80px',borderRadius:"40%"}} />
               <span className="mn-dash-brand-name">MN-PHOTO</span>
             </div>
           )}

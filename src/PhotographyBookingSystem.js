@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, X, User, Mail, Phone, MessageSquare, Clock, MapPin, Plus, Minus, Star, Award, CheckCircle, Instagram, Facebook, Twitter } from 'lucide-react';
-import { collection, getDocs, addDoc, orderBy, onSnapshot } from 'firebase/firestore';
+import { Camera, User, Phone, MessageSquare, Clock, MapPin, Plus, Minus, CheckCircle, Instagram, Facebook, Twitter } from 'lucide-react';
+import { collection, getDocs, addDoc,  } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import logo from './logo.jpg';
 import ModernCarousel from './ModernCarousel';
@@ -39,105 +39,7 @@ const PhotographyBookingSystem = () => {
     'TIZI OUZOU'
   ];
 
-  // Dynamic Hero Elements Component
-  const DynamicHeroElements = () => {
-    const [shapes, setShapes] = useState([]);
-    const [particles, setParticles] = useState([]);
-
-    useEffect(() => {
-      // Generate floating shapes
-      const generateShapes = () => {
-        const newShapes = [];
-        for (let i = 0; i < 8; i++) {
-          const shapeTypes = ['circle', 'triangle', 'square'];
-          const shapeType = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
-          const size = Math.random() * 60 + 40;
-          const duration = Math.random() * 10 + 10;
-          const delay = Math.random() * 15;
-          
-          newShapes.push({
-            id: i,
-            type: shapeType,
-            size,
-            duration,
-            delay,
-            left: Math.random() * 100,
-          });
-        }
-        setShapes(newShapes);
-      };
-
-      // Generate particles
-      const generateParticles = () => {
-        const newParticles = [];
-        for (let i = 0; i < 50; i++) {
-          const duration = Math.random() * 8 + 8;
-          const delay = Math.random() * 20;
-          const startX = Math.random() * 100;
-          const endX = startX + (Math.random() - 0.5) * 40;
-          
-          newParticles.push({
-            id: i,
-            duration,
-            delay,
-            startX,
-            endX,
-            left: Math.random() * 100,
-          });
-        }
-        setParticles(newParticles);
-      };
-
-      generateShapes();
-      generateParticles();
-
-      // Regenerate shapes periodically for more dynamic effect
-      const shapesInterval = setInterval(generateShapes, 30000);
-      const particlesInterval = setInterval(generateParticles, 25000);
-
-      return () => {
-        clearInterval(shapesInterval);
-        clearInterval(particlesInterval);
-      };
-    }, []);
-
-    return (
-      <>
-        {/* Floating Geometric Shapes */}
-        <div className="mnphoto-hero-shapes">
-          {shapes.map(shape => (
-            <div
-              key={shape.id}
-              className={`mnphoto-shape mnphoto-shape-${shape.type}`}
-              style={{
-                '--size': `${shape.size}px`,
-                '--duration': `${shape.duration}s`,
-                left: `${shape.left}%`,
-                animationDelay: `${shape.delay}s`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Particle System */}
-        <div className="mnphoto-particles">
-          {particles.map(particle => (
-            <div
-              key={particle.id}
-              className="mnphoto-particle"
-              style={{
-                '--duration': `${particle.duration}s`,
-                '--start-x': `${particle.startX}vw`,
-                '--end-x': `${particle.endX}vw`,
-                left: `${particle.left}%`,
-                animationDelay: `${particle.delay}s`,
-              }}
-            />
-          ))}
-        </div>
-      </>
-    );
-  };
+ 
 
   // Load service packages from Firestore
   useEffect(() => {
@@ -659,13 +561,13 @@ const PhotographyBookingSystem = () => {
           <div className="mnphoto-footer-social">
             <h4>Suivez-nous</h4>
             <div className="mnphoto-social-links">
-              <a href="#" className="mnphoto-social-link" aria-label="Instagram">
+              <a href="https://www.instagram.com/mnphotography91/" className="mnphoto-social-link" aria-label="Instagram">
                 <Instagram className="mnphoto-social-icon" />
               </a>
-              <a href="#" className="mnphoto-social-link" aria-label="Facebook">
+              <a href="https://www.instagram.com/mnphotography91/" className="mnphoto-social-link" aria-label="Facebook">
                 <Facebook className="mnphoto-social-icon" />
               </a>
-              <a href="#" className="mnphoto-social-link" aria-label="Twitter">
+              <a href="https://www.instagram.com/mnphotography91/" className="mnphoto-social-link" aria-label="Twitter">
                 <Twitter className="mnphoto-social-icon" />
               </a>
             </div>

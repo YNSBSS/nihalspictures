@@ -12,7 +12,7 @@ const ModernHeroSection = ({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
+if (mousePosition===100){console.log("end")}
   // Hero slides with different themes
   const heroSlides = [
     {
@@ -42,7 +42,7 @@ const ModernHeroSection = ({
     }, 6000);
 
     return () => clearInterval(slideInterval);
-  }, []);
+  }, [heroSlides.length]);
 
   // Mouse tracking for parallax effects
   useEffect(() => {

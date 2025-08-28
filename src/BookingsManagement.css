@@ -224,7 +224,7 @@
   background: white;
   border-radius: 16px;
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  overflow: scroll;
   border: 1px solid #e2e8f0;
 }
 
@@ -537,6 +537,8 @@
 
 .ebms-modal-body {
   padding: 2rem;
+    overflow: scroll;
+
 }
 
 /* Price Modal */
@@ -1296,6 +1298,7 @@
   font-family: 'Arial', sans-serif;
   color: #1a202c;
   line-height: 1.6;
+  
 }
 
 .ebms-voucher-header {
@@ -1710,7 +1713,7 @@
 /* Ensure one page layout */
 .ebms-voucher-container {
   max-height: 90vh;
-  overflow: hidden;
+  overflow: scroll;
   font-size: 13px;
 }
 
