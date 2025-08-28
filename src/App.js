@@ -1,24 +1,31 @@
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+
+// Import components
+import PhotographyBookingSystem from './PhotographyBookingSystem';
+import AdminDashboard from './AdminDashboard';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          {/* Main Route - Photography Booking System */}
+          <Route path="/" element={<PhotographyBookingSystem />} />
+
+          {/* Redirect /home to main page */}
+          <Route path="/home" element={<Navigate to="/" replace />} />
+
+          {/* Admin Routes (commented for now) */}
+          <Route path="/admin" element={<AdminDashboard />} />
+
+
+          {/* Catch-all route - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
