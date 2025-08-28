@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Play, Pause, Maximize2, X, Instagram, Heart, Share2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, X, Instagram, Heart, Share2 } from 'lucide-react';
 import './ModernCarousel.css';
 import pic1 from './assets/pic1.jpg';
 import pic2 from './assets/pic2.jpg';
@@ -7,12 +7,13 @@ import pic3 from './assets/pic3.jpg';
 import pic4 from './assets/pic4.jpg';
 import pic5 from './assets/pic5.jpg';
 import pic6 from './assets/pic6.jpg';
+/*
 import pic7 from './assets/pic7.jpg';
 import pic8 from './assets/pic8.jpg';
 import pic9 from './assets/pic9.jpg';
 import pic10 from './assets/pic10.jpg';
 import pic11 from './assets/pic11.jpg';
-import pic12 from './assets/pic12.jpg';
+import pic12 from './assets/pic12.jpg';*/
 // Fallback images - replace with your actual images
 
 
@@ -61,10 +62,9 @@ const ModernCarousel = () => {
     description: 'Photos professionnelles pour entreprises'
   }
 ];
-  const [images, setImages] = useState(fallbackImages);
+const images = fallbackImages;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [loading, setLoading] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -184,6 +184,8 @@ useEffect(() => {
         case 'Escape':
           if (showLightbox) closeLightbox();
           break;
+        default:
+          break;
       }
     };
 
@@ -191,18 +193,7 @@ useEffect(() => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [goToPrevious, goToNext, isPlaying, showLightbox]);
 
-  if (loading) {
-    return (
-      <div className="carousel-container">
-        <div className="carousel-loading">
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-          </div>
-          <p>Chargement de la galerie...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   if (images.length === 0) {
     return (
