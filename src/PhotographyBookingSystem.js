@@ -39,8 +39,6 @@ const PhotographyBookingSystem = () => {
     'TIZI OUZOU'
   ];
 
- 
-
   // Load service packages from Firestore
   useEffect(() => {
     const loadServicePackages = async () => {
@@ -104,7 +102,11 @@ const PhotographyBookingSystem = () => {
     loadServicePackages();
   }, []);
 
+  // Fixed input change handler with proper event handling
   const handleInputChange = (e) => {
+    // Prevent event bubbling that might interfere with key events
+    e.stopPropagation();
+    
     const { name, value } = e.target;
     setBookingForm(prev => ({
       ...prev,
@@ -112,13 +114,35 @@ const PhotographyBookingSystem = () => {
     }));
   };
 
-  const handlePhoneChange = (index, value) => {
+  // Enhanced phone change handler with proper event handling
+  const handlePhoneChange = (index, e) => {
+    // Accept either event object or direct value for backward compatibility
+    const value = typeof e === 'string' ? e : e.target.value;
+    
+    // Stop event propagation if it's an event object
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+    
     const newPhoneNumbers = [...bookingForm.phoneNumbers];
     newPhoneNumbers[index] = value;
     setBookingForm(prev => ({
       ...prev,
       phoneNumbers: newPhoneNumbers
     }));
+  };
+
+  // Enhanced keyboard event handler to ensure spaces work
+  const handleKeyDown = (e) => {
+    // Explicitly allow space key and prevent any interference
+    if (e.key === ' ' || e.keyCode === 32) {
+      // Don't prevent default for space key
+      e.stopPropagation();
+      return true;
+    }
+    
+    // Allow all other normal typing keys
+    return true;
   };
 
   const addPhoneNumber = () => {
@@ -201,13 +225,14 @@ const PhotographyBookingSystem = () => {
   return (
     <div className="mnphoto-page-wrapper">
       {/* Enhanced Hero Section */}
-<ModernHeroSection 
-  logo={logo}
-  businessInfo={businessInfo}
-  onWhatsAppContact={handleWhatsAppContact}
-  onCallNow={handleCallNow}
-  bookingForm={bookingForm}
-/>
+      <ModernHeroSection 
+        logo={logo}
+        businessInfo={businessInfo}
+        onWhatsAppContact={handleWhatsAppContact}
+        onCallNow={handleCallNow}
+        bookingForm={bookingForm}
+      />
+      
       {/* Portfolio Carousel */}
       <section className="mnphoto-portfolio-section">
         <div className="mnphoto-section-container">
@@ -215,6 +240,7 @@ const PhotographyBookingSystem = () => {
           <ModernCarousel />
         </div>
       </section>
+      
       {/* Services Section */}
       <section className="mnphoto-services-section">
         <div className="mnphoto-section-container">
@@ -299,10 +325,12 @@ const PhotographyBookingSystem = () => {
                       name="firstName"
                       value={bookingForm.firstName}
                       onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
                       className="mnphoto-form-input"
                       placeholder="Votre prénom"
                       disabled={submitting}
                       required
+                      autoComplete="given-name"
                     />
                   </div>
 
@@ -313,10 +341,12 @@ const PhotographyBookingSystem = () => {
                       name="lastName"
                       value={bookingForm.lastName}
                       onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
                       className="mnphoto-form-input"
                       placeholder="Votre nom de famille"
                       disabled={submitting}
                       required
+                      autoComplete="family-name"
                     />
                   </div>
 
@@ -327,10 +357,12 @@ const PhotographyBookingSystem = () => {
                       name="email"
                       value={bookingForm.email}
                       onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
                       className="mnphoto-form-input"
                       placeholder="votre.email@exemple.com"
                       disabled={submitting}
                       required
+                      autoComplete="email"
                     />
                   </div>
 
@@ -341,11 +373,13 @@ const PhotographyBookingSystem = () => {
                         <input
                           type="tel"
                           value={phone}
-                          onChange={(e) => handlePhoneChange(index, e.target.value)}
+                          onChange={(e) => handlePhoneChange(index, e)}
+                          onKeyDown={handleKeyDown}
                           className="mnphoto-form-input"
                           placeholder={index === 0 ? "+213 XXX XXX XXX (Principal)" : "+213 XXX XXX XXX (Optionnel)"}
                           disabled={submitting}
                           required={index === 0}
+                          autoComplete="tel"
                         />
                         <div className="mnphoto-phone-actions">
                           {index === bookingForm.phoneNumbers.length - 1 && (
@@ -409,10 +443,12 @@ const PhotographyBookingSystem = () => {
                       name="addressDetails"
                       value={bookingForm.addressDetails}
                       onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
                       className="mnphoto-form-input"
                       placeholder="Adresse complète (rue, quartier, commune...)"
                       disabled={submitting}
                       required
+                      autoComplete="street-address"
                     />
                   </div>
                 </div>
@@ -433,6 +469,7 @@ const PhotographyBookingSystem = () => {
                       name="packName"
                       value={bookingForm.packName}
                       onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
                       className="mnphoto-form-input"
                       placeholder="Nom du forfait"
                       disabled={submitting}
@@ -475,6 +512,7 @@ const PhotographyBookingSystem = () => {
                       name="remarks"
                       value={bookingForm.remarks}
                       onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
                       rows={4}
                       className="mnphoto-form-textarea"
                       placeholder="Détails supplémentaires, demandes spéciales, style souhaité..."
