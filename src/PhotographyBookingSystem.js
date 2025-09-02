@@ -195,7 +195,7 @@ const PhotographyBookingSystem = () => {
         time: '',
         email: '',
         remarks: '',
-        status: 'En attente'
+        status: 'Requested'
       });
     } catch (error) {
       console.error('Erreur lors de la soumission:', error);
