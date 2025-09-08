@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { Camera, Award, Star, CheckCircle, MessageSquare, Phone, ArrowDown } from 'lucide-react';
 import './ModernHeroSection.css';
 
@@ -9,41 +8,6 @@ const ModernHeroSection = ({
   onCallNow,
   bookingForm 
 }) => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  // Hero slides with different themes
-  const heroSlides = [
-    {
-      title: "Capturer l'Émotion",
-      subtitle: "Chaque instant mérite d'être immortalisé avec art et passion",
-      theme: "emotion",
-      backgroundGradient: "from-slate-900 via-blue-900 to-indigo-900"
-    },
-    {
-      title: "Moments Précieux",
-      subtitle: "Votre histoire racontée à travers notre objectif professionnel",
-      theme: "moments",
-      backgroundGradient: "from-blue-900 via-cyan-900 to-slate-900"
-    },
-    {
-      title: "Excellence Créative",
-      subtitle: "L'art de la photographie au service de vos souvenirs",
-      theme: "creative",
-      backgroundGradient: "from-indigo-900 via-blue-900 to-black"
-    }
-  ];
-
-  // Auto-slide functionality
-  useEffect(() => {
-    const slideInterval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 6000);
-
-    return () => clearInterval(slideInterval);
-  }, [heroSlides.length]);
-
-
-
 
 
   const scrollToNext = () => {
