@@ -939,7 +939,7 @@ const downloadVoucherPDF = async () => {
                       <img src={logo} alt="logo" style={{width:"70px", borderRadius:"40%"}} />
                     </div>
                     <div className="ebms-company-info">
-                      <h1 className="ebms-company-name">MN Photohraphy</h1>
+                      <h1 className="ebms-company-name">Nihal's Pictures</h1>
                       <p className="ebms-company-tagline">Professional Photography Services</p>
                     </div>
                   </div>
@@ -1028,7 +1028,7 @@ const downloadVoucherPDF = async () => {
                   <div className="ebms-footer-contact">
                     <h4>Contact Information</h4>
                     <p><Phone size={12} /> +213 552 49 33 48</p>
-                    <p><Mail size={12} /> mnphotography@gmail.com</p>
+                    <p><Mail size={12} /> nihalspictures@gmail.com</p>
                     <p><MapPin size={12} /> Alger, Algeria</p>
                   </div>
                   <div className="ebms-footer-signature">
@@ -1039,7 +1039,7 @@ const downloadVoucherPDF = async () => {
                 </div>
 
                 <div className="ebms-voucher-terms">
-                  <p><small>Ce bon sert de preuve de paiement pour les services de mn-photography. Veuillez le conserver pour vos dossiers.</small></p>
+                  <p><small>Ce bon sert de preuve de paiement pour les services de Nihal's Pictures. Veuillez le conserver pour vos dossiers.</small></p>
                 </div>
               </div>
 

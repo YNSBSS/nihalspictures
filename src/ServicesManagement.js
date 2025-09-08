@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Search, Plus, Edit, Trash2, X, Clock, DollarSign, FileText, Save, AlertCircle, CheckCircle, RefreshCw, Upload  } from 'lucide-react';
+import { Camera, Search, Plus, Edit, Trash2, X, Clock, DollarSign, FileText, Save, AlertCircle, CheckCircle, RefreshCw, Upload } from 'lucide-react';
 import { collection, onSnapshot, query, orderBy, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import './ServicesManagement.css';
@@ -28,8 +28,9 @@ const ServicesManagement = () => {
   });
 
   // Cloudinary configuration
-  const CLOUDINARY_CLOUD_NAME = 'dggrpwf1p';
-  const CLOUDINARY_UPLOAD_PRESET = 'services_upload'; // You'll need to create this preset in Cloudinary
+  // Cloudinary configuration
+  const CLOUDINARY_CLOUD_NAME = 'dn2bxcems';
+  const CLOUDINARY_UPLOAD_PRESET = 'services_upload';
 
   // Load services from Firestore
   useEffect(() => {
@@ -45,7 +46,7 @@ const ServicesManagement = () => {
             createdAt: doc.data().createdAt?.toDate?.() || new Date(),
             updatedAt: doc.data().updatedAt?.toDate?.() || new Date()
           }));
-          
+
           setServices(servicesData);
           setFilteredServices(servicesData);
           setLoading(false);
@@ -132,17 +133,17 @@ const ServicesManagement = () => {
 
     try {
       const formData = new FormData();
-formData.append('file', file);
-formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-formData.append('folder', 'services');
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', 'services');
 
-const response = await fetch(
-  `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-  {
-    method: 'POST',
-    body: formData,
-  }
-);
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
 
 
       if (!response.ok) {
@@ -150,7 +151,7 @@ const response = await fetch(
       }
 
       const data = await response.json();
-      
+
       setServiceForm(prev => ({
         ...prev,
         imageUrl: data.secure_url
@@ -218,11 +219,11 @@ const response = await fetch(
     }
 
     // Check if service number already exists (for new services or when editing and changing the number)
-    const existingService = services.find(service => 
-      service.serviceNumber === serviceForm.serviceNumber && 
+    const existingService = services.find(service =>
+      service.serviceNumber === serviceForm.serviceNumber &&
       (!editingService || service.id !== editingService.id)
     );
-    
+
     if (existingService) {
       alert('Service number already exists. Please choose a different number.');
       return;
@@ -233,7 +234,7 @@ const response = await fetch(
     try {
       // Filter out empty features
       const features = serviceForm.features.filter(feature => feature.trim() !== '');
-      
+
       const serviceData = {
         name: serviceForm.name.trim(),
         serviceNumber: serviceForm.serviceNumber.trim(),
@@ -375,8 +376,8 @@ const response = await fetch(
                 {/* Service Image */}
                 {service.imageUrl && (
                   <div className="sm-service-image-container">
-                    <img 
-                      src={service.imageUrl} 
+                    <img
+                      src={service.imageUrl}
                       alt={service.name}
                       className="sm-service-image"
                     />
@@ -397,7 +398,7 @@ const response = await fetch(
                       <p className="sm-service-category">{service.category}</p>
                     )}
                   </div>
-                  
+
                   {/* Action Buttons */}
                   <div className="sm-service-actions">
                     <button
@@ -433,7 +434,7 @@ const response = await fetch(
                     <Clock className="sm-detail-icon" />
                     <span className="sm-detail-text">{service.duration}</span>
                   </div>
-                  
+
                   <div className="sm-service-price-item">
                     <DollarSign className="sm-detail-icon" />
                     <span className="sm-service-price">DZD {service.price?.toLocaleString()}</span>
@@ -503,9 +504,9 @@ const response = await fetch(
                   <div className="sm-image-upload-container">
                     {serviceForm.imageUrl ? (
                       <div className="sm-image-preview-container">
-                        <img 
-                          src={serviceForm.imageUrl} 
-                          alt="Service preview" 
+                        <img
+                          src={serviceForm.imageUrl}
+                          alt="Service preview"
                           className="sm-image-preview"
                         />
                         <button
@@ -740,7 +741,7 @@ const response = await fetch(
                   <X className="sm-modal-close-icon" />
                 </button>
               </div>
-              
+
               <div className="sm-delete-modal-body">
                 <AlertCircle className="sm-delete-warning-icon" />
                 <div className="sm-delete-warning-content">
@@ -752,7 +753,7 @@ const response = await fetch(
                   </p>
                 </div>
               </div>
-              
+
               <div className="sm-modal-actions">
                 <button
                   onClick={() => setShowDeleteModal(false)}

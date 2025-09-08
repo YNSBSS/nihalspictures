@@ -5,13 +5,13 @@ import { getFirestore } from "firebase/firestore"; // Import Firestore
 import { getAuth } from "firebase/auth"; // Import Firebase Authentication (if needed)
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyABTMaKXkn8r3-7AZdAJLENFkTSlX-syUE",
-  authDomain: "naira-60349.firebaseapp.com",
-  projectId: "naira-60349",
-  storageBucket: "naira-60349.firebasestorage.app",
-  messagingSenderId: "649910294806",
-  appId: "1:649910294806:web:ff4f56f7699193f38f5837",
-  measurementId: "G-Q0F6Z851PR"
+  apiKey: "AIzaSyBEUKfCfNsqapk4MtsYgMkYhQmZrO9K2F8",
+  authDomain: "nihalspictures-2a873.firebaseapp.com",
+  projectId: "nihalspictures-2a873",
+  storageBucket: "nihalspictures-2a873.firebasestorage.app",
+  messagingSenderId: "709018193809",
+  appId: "1:709018193809:web:18ab041b6130ad41659430",
+  measurementId: "G-21ZVEV760C"
 };
 
 // Initialize Firebase

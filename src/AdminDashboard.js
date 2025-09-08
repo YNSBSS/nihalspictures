@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Calendar, Camera, Menu, X, Bell, TrendingUp, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, LogOut, DollarSign, TrendingDown } from 'lucide-react';
+import { LayoutDashboard, Calendar, Camera, Menu, X, Bell, TrendingUp, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, LogOut, DollarSign, TrendingDown, Image } from 'lucide-react';
 import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from './firebaseConfig';
@@ -8,6 +8,7 @@ import logo from './logo.jpg';
 import { Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import BookingsManagement from './BookingsManagement';
 import ServicesManagement from './ServicesManagement';
+import MediaManagement from './MediaManagement';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -240,6 +241,7 @@ const AdminDashboard = () => {
     { id: 'vue-generale', label: 'Vue Générale', icon: LayoutDashboard },
     { id: 'gestion-reservations', label: 'Gestion Réservations', icon: Calendar },
     { id: 'services-tarifs', label: 'Services & Tarifs', icon: Camera },
+    { id: 'gestion-media', label: 'Gestion Médias', icon: Image },
   ];
 
   const getStatusColor = (status) => {
@@ -293,7 +295,7 @@ const AdminDashboard = () => {
         <div className="mn-dash-auth-card">
           <div className="mn-dash-auth-header">
               <img src={logo} alt="mn-photo" style={{width:'80px',borderRadius:"40%"}} />
-            <h1>MN-PHOTO Admin</h1>
+            <h1>Nihal's pictures Admin</h1>
             <p>Connectez-vous pour accéder au tableau de bord</p>
           </div>
           
@@ -335,6 +337,7 @@ const AdminDashboard = () => {
     switch (activeTab) {
       case 'gestion-reservations': return <BookingsManagement />;
       case 'services-tarifs': return <ServicesManagement />;
+      case 'gestion-media': return <MediaManagement />;
       default:
         return (
           <div className="mn-dash-content">
@@ -636,6 +639,13 @@ const AdminDashboard = () => {
                   <div className="mn-dash-action-content">
                     <p className="mn-dash-action-title">Services & Tarifs</p>
                     <p className="mn-dash-action-description">Modifier les tarifs et services</p>
+                  </div>
+                </button>
+                <button onClick={() => setActiveTab('gestion-media')} className="mn-dash-action-button">
+                  <Image className="mn-dash-action-icon mn-dash-icon-purple" />
+                  <div className="mn-dash-action-content">
+                    <p className="mn-dash-action-title">Gestion Médias</p>
+                    <p className="mn-dash-action-description">Gérer les images et vidéos du carousel</p>
                   </div>
                 </button>
               </div>

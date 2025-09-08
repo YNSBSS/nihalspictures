@@ -6,7 +6,7 @@ import logo from './logo.jpg';
 import ModernCarousel from './ModernCarousel';
 import './PhotographyBookingSystem.css';
 import ModernHeroSection from './ModernHeroSection';
-
+import nihalnobcg from './nihalnobcg.png';
 const PhotographyBookingSystem = () => {
   const [servicePackages, setServicePackages] = useState([]);
   const [bookingForm, setBookingForm] = useState({
@@ -26,8 +26,8 @@ const PhotographyBookingSystem = () => {
 
   // Business contact information
   const businessInfo = {
-    phone: '+213 552 49 33 48',
-    whatsapp: '213552493348'
+    phone: '0561696809',
+    whatsapp: '213561696809'
   };
 
   // Wilaya options
@@ -226,7 +226,7 @@ const PhotographyBookingSystem = () => {
     <div className="mnphoto-page-wrapper">
       {/* Enhanced Hero Section */}
       <ModernHeroSection 
-        logo={logo}
+        logo={nihalnobcg}
         businessInfo={businessInfo}
         onWhatsAppContact={handleWhatsAppContact}
         onCallNow={handleCallNow}
@@ -350,7 +350,7 @@ const PhotographyBookingSystem = () => {
                     />
                   </div>
 
-                  <div className="mnphoto-form-group">
+                  <div className="mnphoto-form-group ">
                     <label className="mnphoto-form-label">Email</label>
                     <input
                       type="email"
@@ -576,7 +576,7 @@ const PhotographyBookingSystem = () => {
         <div className="mnphoto-footer-content">
           <div className="mnphoto-footer-brand">
             <img src={logo} alt="MN-Photography" className="mnphoto-footer-logo" />
-            <h3>MN-PHOTOGRAPHY</h3>
+            <h3>Nihal's Pictures PHOTOGRAPHY</h3>
             <p>Votre photographe professionnel en Algérie. Nous immortalisons vos moments les plus précieux avec créativité et passion.</p>
           </div>
           
@@ -599,13 +599,13 @@ const PhotographyBookingSystem = () => {
           <div className="mnphoto-footer-social">
             <h4>Suivez-nous</h4>
             <div className="mnphoto-social-links">
-              <a href="https://www.instagram.com/mnphotography91/" className="mnphoto-social-link" aria-label="Instagram">
+              <a href="https://www.instagram.com/nihal.s_pictures/" className="mnphoto-social-link" aria-label="Instagram">
                 <Instagram className="mnphoto-social-icon" />
               </a>
-              <a href="https://www.instagram.com/mnphotography91/" className="mnphoto-social-link" aria-label="Facebook">
+              <a href="https://www.facebook.com/nihals.pictures/" className="mnphoto-social-link" aria-label="Facebook">
                 <Facebook className="mnphoto-social-icon" />
               </a>
-              <a href="https://www.instagram.com/mnphotography91/" className="mnphoto-social-link" aria-label="Twitter">
+              <a href="https://www.instagram.com/nihal.s_pictures/" className="mnphoto-social-link" aria-label="Twitter">
                 <Twitter className="mnphoto-social-icon" />
               </a>
             </div>
@@ -613,7 +613,7 @@ const PhotographyBookingSystem = () => {
         </div>
         
         <div className="mnphoto-footer-bottom">
-          <p>&copy; 2025 MN-Photography. Tous droits réservés. | Designed with ❤️ for capturing memories</p>
+          <p>&copy; 2025 Nihal's Pictures Photography. Tous droits réservés. | Designed with ❤️ for capturing memories</p>
         </div>
       </footer>
     </div>
