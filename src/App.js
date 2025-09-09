@@ -11,7 +11,6 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          {/* Main Route - Photography Booking System */}
           <Route path="/" element={<PhotographyBookingSystem />} />
 
           {/* Redirect /home to main page */}
