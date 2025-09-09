@@ -670,7 +670,7 @@ const AdminDashboard = () => {
           {sidebarOpen && (
             <div className="mn-dash-brand">
               <img src={logo} alt="mn-photo" style={{width:'80px',borderRadius:"40%"}} />
-              <span className="mn-dash-brand-name">MN-PHOTO</span>
+              <span className="mn-dash-brand-name">Nihal's pictures</span>
             </div>
           )}
           {isMobile && (
