@@ -83,6 +83,7 @@ input {
   justify-content: center;
   background: linear-gradient(135deg, var(--mn-primary-50) 0%, var(--mn-gray-50) 100%);
   padding: 1rem;
+  font-size: 90%;
 }
 
 .mn-dash-auth-loading {

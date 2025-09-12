@@ -1,6 +1,6 @@
-import { Camera, Award, Star, CheckCircle, MessageSquare, Phone, ArrowDown } from 'lucide-react';
+import React from 'react';
+import { Camera, Award, Star, CheckCircle, Phone, ArrowDown,Instagram } from 'lucide-react';
 import './ModernHeroSection.css';
-
 const ModernHeroSection = ({ 
   logo, 
   businessInfo, 
@@ -8,7 +8,6 @@ const ModernHeroSection = ({
   onCallNow,
   bookingForm 
 }) => {
-
 
   const scrollToNext = () => {
     const nextSection = document.querySelector('.mnphoto-portfolio-section');
@@ -30,7 +29,7 @@ const ModernHeroSection = ({
                 <div className="logo-outer-ring">
                   <div className="logo-inner-chamber">
                     <img 
-                      src={logo} 
+                      src={logo || "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=200&h=200&fit=crop&crop=face"} 
                       alt="Nihal's Pictures" 
                       className="brand-image-core"
                     />
@@ -111,9 +110,8 @@ const ModernHeroSection = ({
                   className="action-btnnn action-btn-primary"
                   onClick={onWhatsAppContact}
                 >
-                  <MessageSquare className="btn-icon" />
-                  <span>Réserver sur WhatsApp</span>
-                  <div className="btn-shimmer" />
+                  <Instagram className="btn-icon" />
+                  <span>Réserver sur Instagrame</span>
                 </button>
 
                 <button 
@@ -121,14 +119,10 @@ const ModernHeroSection = ({
                   onClick={onCallNow}
                 >
                   <Phone className="btn-icon" />
-                  <span>{businessInfo?.phone}</span>
-                  <div className="btn-shimmer" />
+                  <span>{businessInfo?.phone || "+213 123 456 789"}</span>
                 </button>
               </div>
-
             </div>
-
-            
           </div>
 
           {/* Scroll Invitation */}
@@ -146,22 +140,26 @@ const ModernHeroSection = ({
       </section>
 
       {/* Statistics Showcase */}
-      <div className="statistics-showcase">
-        <div className="stat-display-item">
-          <div className="stat-figure">500+</div>
-          <div className="stat-description">Clients Satisfaits</div>
+      <section className="statistics-showcase">
+        <div className="stats-container">
+          <div className="stat-display-item">
+            <div className="stat-figure">500+</div>
+            <div className="stat-description">Clients Satisfaits</div>
+          </div>
+          <div className="stat-separator" />
+          <div className="stat-display-item">
+            <div className="stat-figure">50+</div>
+            <div className="stat-description">Mariages Immortalisés</div>
+          </div>
+          <div className="stat-separator" />
+          <div className="stat-display-item">
+            <div className="stat-figure">1000+</div>
+            <div className="stat-description">Photos Professionnelles</div>
+          </div>
         </div>
-        <div className="stat-separator" />
-        <div className="stat-display-item">
-          <div className="stat-figure">50+</div>
-          <div className="stat-description">Mariages Immortalisés</div>
-        </div>
-        <div className="stat-separator" />
-        <div className="stat-display-item">
-          <div className="stat-figure">1000+</div>
-          <div className="stat-description">Photos Professionnelles</div>
-        </div>
-      </div>
+      </section>
+
+
     </>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Maximize2, X, Instagram, Heart, Share2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, X, Instagram, Heart, Share2, Play, Pause } from 'lucide-react';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from './firebaseConfig'; // Import your Firebase config
 import './ModernCarousel.css';
@@ -17,6 +17,8 @@ const ModernCarousel = () => {
   const carouselRef = useRef(null);
   const intervalRef = useRef(null);
   const videoRefsMap = useRef(new Map());
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   // Load media data from Firestore
   useEffect(() => {
@@ -25,10 +27,9 @@ const ModernCarousel = () => {
         setLoading(true);
         setError(null);
         
-        // Query the collection - adjust collection name as needed
         const mediaQuery = query(
-          collection(db, 'media'), // Change 'media' to your collection name
-          orderBy('createdAt', 'desc') // Order by creation date, adjust field name as needed
+          collection(db, 'media'),
+          orderBy('createdAt', 'desc')
         );
         
         const querySnapshot = await getDocs(mediaQuery);
@@ -38,13 +39,12 @@ const ModernCarousel = () => {
           const data = doc.data();
           mediaData.push({
             id: doc.id,
-            url: data.url, // URL field in your Firestore document
-            type: data.type || 'image', // 'image' or 'video' - defaults to image if not specified
+            url: data.url,
+            type: data.type || 'image',
             instagramUrl: data.instagramUrl || '',
             title: data.title || '',
             description: data.description || '',
             createdAt: data.createdAt,
-            // Add any other fields you have in your Firestore documents
           });
         });
         
@@ -60,7 +60,7 @@ const ModernCarousel = () => {
     loadMediaFromFirestore();
   }, []);
 
-  // Auto-play functionality with smooth transitions
+  // Auto-play functionality
   const currentIndexRef = useRef(0);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ const ModernCarousel = () => {
       const newIndex = (currentIndexRef.current + 1) % images.length;
       setCurrentIndex(newIndex);
       setIsTransitioning(true);
-      setTimeout(() => setIsTransitioning(false), 800);
+      setTimeout(() => setIsTransitioning(false), 600);
     }, 5000);
 
     return () => {
@@ -89,23 +89,28 @@ const ModernCarousel = () => {
     };
   }, [isPlaying, images.length]);
 
-  // Manage video playback
+  // Video management with performance optimization
   useEffect(() => {
-    // Play all videos when they should be playing
     videoRefsMap.current.forEach((videoElement, mediaId) => {
-      if (videoElement && videoElement.paused) {
-        videoElement.play().catch(console.error);
+      if (videoElement) {
+        const mediaIndex = images.findIndex(img => img.id === mediaId);
+        if (Math.abs(mediaIndex - currentIndex) <= 1) {
+          // Only play videos that are visible or adjacent
+          if (videoElement.paused) {
+            videoElement.play().catch(console.error);
+          }
+        } else {
+          videoElement.pause();
+        }
       }
     });
-  }, [currentIndex]);
+  }, [currentIndex, images]);
 
-  // Cleanup video refs on unmount - FIXED
+  // Cleanup
   useEffect(() => {
-    // Capture the current value of the ref
     const currentVideoRefsMap = videoRefsMap.current;
     
     return () => {
-      // Use the captured value in the cleanup function
       currentVideoRefsMap.forEach(video => {
         if (video) {
           video.pause();
@@ -114,40 +119,46 @@ const ModernCarousel = () => {
     };
   }, []);
 
-  const goToSlide = useCallback((index, direction = 'next') => {
-    if (isTransitioning || index === currentIndex) return;
+  const goToSlide = useCallback((index) => {
+    if (isTransitioning || index === currentIndex || index < 0 || index >= images.length) return;
     
     setIsTransitioning(true);
     setCurrentIndex(index);
     
-    setTimeout(() => setIsTransitioning(false), 800);
-  }, [isTransitioning, currentIndex]);
+    setTimeout(() => setIsTransitioning(false), 600);
+  }, [isTransitioning, currentIndex, images.length]);
 
   const goToPrevious = useCallback(() => {
     if (isTransitioning) return;
     const newIndex = (currentIndex - 1 + images.length) % images.length;
-    goToSlide(newIndex, 'prev');
+    goToSlide(newIndex);
   }, [currentIndex, images.length, isTransitioning, goToSlide]);
 
   const goToNext = useCallback(() => {
     if (isTransitioning) return;
     const newIndex = (currentIndex + 1) % images.length;
-    goToSlide(newIndex, 'next');
+    goToSlide(newIndex);
   }, [currentIndex, images.length, isTransitioning, goToSlide]);
 
   const openLightbox = (index) => {
     setLightboxIndex(index);
     setShowLightbox(true);
     setIsPlaying(false);
+    // Prevent body scroll when lightbox is open
+    document.body.style.overflow = 'hidden';
   };
 
   const closeLightbox = () => {
     setShowLightbox(false);
     setIsPlaying(true);
+    // Restore body scroll
+    document.body.style.overflow = 'unset';
   };
 
   const openInstagram = (url) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const toggleLike = (imageId) => {
@@ -166,20 +177,37 @@ const ModernCarousel = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: image.title,
-          text: image.description,
+          title: image.title || 'Image partagée',
+          text: image.description || 'Découvrez cette image',
           url: image.instagramUrl || window.location.href,
         });
       } catch (err) {
-        console.log('Error sharing:', err);
+        if (err.name !== 'AbortError') {
+          console.log('Error sharing:', err);
+          fallbackShare(image);
+        }
       }
     } else {
-      // Fallback to clipboard
-      navigator.clipboard.writeText(image.instagramUrl || window.location.href);
+      fallbackShare(image);
     }
   };
 
-  // Fixed video ref callback to prevent infinite loops
+  const fallbackShare = (image) => {
+    const url = image.instagramUrl || window.location.href;
+    navigator.clipboard?.writeText(url).then(() => {
+      // You could show a toast notification here
+      console.log('URL copied to clipboard');
+    }).catch(() => {
+      // Fallback for very old browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    });
+  };
+
   const setVideoRef = useCallback((element, mediaId) => {
     if (element) {
       videoRefsMap.current.set(mediaId, element);
@@ -188,10 +216,51 @@ const ModernCarousel = () => {
     }
   }, []);
 
+  // Touch/swipe handling
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      goToNext();
+    } else if (isRightSwipe) {
+      goToPrevious();
+    }
+
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (showLightbox) return;
+      if (showLightbox) {
+        switch (e.key) {
+          case 'ArrowLeft':
+            setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+            break;
+          case 'ArrowRight':
+            setLightboxIndex((prev) => (prev + 1) % images.length);
+            break;
+          case 'Escape':
+            closeLightbox();
+            break;
+          default:
+            break;
+        }
+        return;
+      }
       
       switch (e.key) {
         case 'ArrowLeft':
@@ -214,9 +283,9 @@ const ModernCarousel = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [goToPrevious, goToNext, isPlaying, showLightbox]);
+  }, [goToPrevious, goToNext, isPlaying, showLightbox, images.length]);
 
-  // Render media content (image or video)
+  // Render media content
   const renderMedia = (media, isCenter = false, isLightbox = false) => {
     const className = isLightbox ? 'lightbox-image' : 'slide-image';
     
@@ -227,16 +296,18 @@ const ModernCarousel = () => {
           src={media.url}
           className={className}
           controls={isCenter || isLightbox}
-          muted={true} // Always muted for autoplay to work
-          loop={true} // Always loop
-          autoPlay={true} // Always autoplay
+          muted={!isLightbox}
+          loop
+          autoPlay={!isLightbox}
           playsInline
-          loading="lazy"
+          preload={isCenter ? 'auto' : 'metadata'}
           onLoadedData={(e) => {
-            // Ensure video starts playing when loaded
-            if (!isLightbox) {
+            if (!isLightbox && isCenter) {
               e.target.play().catch(console.error);
             }
+          }}
+          onError={(e) => {
+            console.error('Video loading error:', e);
           }}
         />
       );
@@ -244,9 +315,13 @@ const ModernCarousel = () => {
       return (
         <img
           src={media.url}
-          alt={media.title || `Media ${media.id}`}
+          alt={media.title || `Média ${media.id}`}
           className={className}
-          loading="lazy"
+          loading={isCenter ? 'eager' : 'lazy'}
+          onError={(e) => {
+            console.error('Image loading error:', e);
+            e.target.style.display = 'none';
+          }}
         />
       );
     }
@@ -256,7 +331,8 @@ const ModernCarousel = () => {
   if (loading) {
     return (
       <div className="carousel-container">
-        <div className="carousel-empty">
+        <div className="carousel-loading">
+          <div className="spinner"></div>
           <p>Chargement des médias...</p>
         </div>
       </div>
@@ -300,11 +376,19 @@ const ModernCarousel = () => {
     return position > 0 ? 'slide-far-right' : 'slide-far-left';
   };
 
+  const progressPercentage = images.length > 0 ? ((currentIndex + 1) / images.length) * 100 : 0;
+
   return (
     <>
-      <div className="carousel-container" ref={carouselRef}>
+      <div 
+        className="carousel-container" 
+        ref={carouselRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="carousel-wrapper">
-          {/* Background with dynamic blur */}
+          {/* Dynamic background */}
           <div 
             className="carousel-background"
             style={{
@@ -312,17 +396,16 @@ const ModernCarousel = () => {
             }}
           />
 
-          {/* 3D Carousel Content */}
+          {/* Carousel Content */}
           <div className="carousel-content">
-            {/* Enhanced Navigation Buttons */}
+            {/* Navigation Buttons */}
             <button
               className="carousel-nav carousel-nav-left"
               onClick={goToPrevious}
               disabled={isTransitioning}
               aria-label="Média précédent"
             >
-              <ChevronLeft size={28} />
-              <span className="nav-label">Précédent</span>
+              <ChevronLeft size={24} />
             </button>
 
             <button
@@ -331,8 +414,7 @@ const ModernCarousel = () => {
               disabled={isTransitioning}
               aria-label="Média suivant"
             >
-              <ChevronRight size={28} />
-              <span className="nav-label">Suivant</span>
+              <ChevronRight size={24} />
             </button>
 
             {/* 3D Carousel Track */}
@@ -368,7 +450,7 @@ const ModernCarousel = () => {
                               }}
                               title="J'aime"
                             >
-                              <Heart fill={liked.has(media.id) ? 'currentColor' : 'none'} />
+                              <Heart size={16} fill={liked.has(media.id) ? 'currentColor' : 'none'} />
                             </button>
 
                             <button
@@ -379,7 +461,7 @@ const ModernCarousel = () => {
                               }}
                               title="Partager"
                             >
-                              <Share2 />
+                              <Share2 size={16} />
                             </button>
                             
                             <button
@@ -390,7 +472,7 @@ const ModernCarousel = () => {
                               }}
                               title="Plein écran"
                             >
-                              <Maximize2 />
+                              <Maximize2 size={16} />
                             </button>
                             
                             {media.instagramUrl && (
@@ -402,7 +484,7 @@ const ModernCarousel = () => {
                                 }}
                                 title="Voir sur Instagram"
                               >
-                                <Instagram />
+                                <Instagram size={16} />
                               </button>
                             )}
                           </div>
@@ -420,96 +502,177 @@ const ModernCarousel = () => {
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Enhanced Lightbox Modal */}
-      {showLightbox && (
-        <div className="lightbox-overlay" onClick={closeLightbox}>
-          <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="lightbox-close"
-              onClick={closeLightbox}
-              title="Fermer"
-            >
-              <X />
-            </button>
-
-            <div className="lightbox-content">
-              <button
-                className="lightbox-nav lightbox-nav-left"
-                onClick={() => setLightboxIndex((prev) => (prev - 1 + images.length) % images.length)}
-                title="Média précédent"
-              >
-                <ChevronLeft />
-              </button>
-
-              <div className="lightbox-image-wrapper">
-                {renderMedia(images[lightboxIndex], false, true)}
-              </div>
-
-              <button
-                className="lightbox-nav lightbox-nav-right"
-                onClick={() => setLightboxIndex((prev) => (prev + 1) % images.length)}
-                title="Média suivant"
-              >
-                <ChevronRight />
-              </button>
-            </div>
-
-            {/* Lightbox Info Panel */}
-            <div className="lightbox-info">
-              <div className="info-content">
-                {images[lightboxIndex]?.title && (
-                  <h3>{images[lightboxIndex].title}</h3>
-                )}
-                {images[lightboxIndex]?.description && (
-                  <p>{images[lightboxIndex].description}</p>
-                )}
-              </div>
-              
-              <div className="info-actions">
-                {images[lightboxIndex]?.instagramUrl && (
-                  <button
-                    className="lightbox-instagram"
-                    onClick={() => openInstagram(images[lightboxIndex].instagramUrl)}
-                  >
-                    <Instagram />
-                    Instagram
-                  </button>
-                )}
-                
+            {/* Enhanced Controls */}
+            <div className="carousel-controls">
+              <div className="controls-left">
                 <button
-                  className="lightbox-share"
-                  onClick={() => shareImage(images[lightboxIndex])}
+                  className={`control-btn play-pause ${isPlaying ? 'playing' : 'paused'}`}
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  title={isPlaying ? 'Pause' : 'Play'}
                 >
-                  <Share2 />
-                  Partager
+                  {isPlaying ? <Pause size={16} /> : <Play size={16} />}
                 </button>
+
+                <div className="carousel-counter">
+                  <span className="current">{currentIndex + 1}</span>
+                  <span className="separator">/</span>
+                  <span className="total">{images.length}</span>
+                </div>
+              </div>
+
+              <div className="carousel-progress">
+                <div className="progress-track">
+                  <div 
+                    className="progress-bar" 
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="controls-right">
+                <span className="image-title">
+                  {images[currentIndex]?.title || `Média ${currentIndex + 1}`}
+                </span>
               </div>
             </div>
+          </div>
 
-            {/* Lightbox Thumbnails */}
-            <div className="lightbox-thumbnails">
+          {/* Thumbnails */}
+          <div className="carousel-thumbnails">
+            <div className="thumbnails-track">
               {images.map((media, index) => (
                 <button
                   key={media.id}
-                  className={`lightbox-thumbnail ${index === lightboxIndex ? 'active' : ''}`}
-                  onClick={() => setLightboxIndex(index)}
+                  className={`thumbnail ${index === currentIndex ? 'active' : ''}`}
+                  onClick={() => goToSlide(index)}
                   title={media.title || `Média ${index + 1}`}
                 >
                   {media.type === 'video' ? (
-                    <video src={media.url} muted />
+                    <video 
+                      src={media.url} 
+                      className="thumbnail-image"
+                      muted 
+                      preload="metadata"
+                    />
                   ) : (
-                    <img src={media.url} alt={`Miniature ${index + 1}`} />
+                    <img 
+                      src={media.url} 
+                      alt={`Miniature ${index + 1}`}
+                      className="thumbnail-image"
+                      loading="lazy"
+                    />
                   )}
+                  <div className="thumbnail-overlay">
+                    <span className="thumbnail-number">{index + 1}</span>
+                  </div>
                 </button>
               ))}
             </div>
           </div>
         </div>
+      </div>
+
+
+{showLightbox && (
+  <div className="lightbox-overlay" onClick={closeLightbox}>
+    <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
+      
+      {/* Fixed Close Button */}
+      <button
+        className="lightbox-close"
+        onClick={closeLightbox}
+        title="Fermer"
+      >
+        <X size={20} />
+      </button>
+
+      {/* Main Content Area */}
+      <div className="lightbox-content">
+        <button
+          className="lightbox-nav lightbox-nav-left"
+          onClick={() => setLightboxIndex((prev) => (prev - 1 + images.length) % images.length)}
+          title="Média précédent"
+        >
+          <ChevronLeft size={24} />
+        </button>
+
+        <div className="lightbox-image-wrapper">
+          {renderMedia(images[lightboxIndex], false, true)}
+        </div>
+
+        <button
+          className="lightbox-nav lightbox-nav-right"
+          onClick={() => setLightboxIndex((prev) => (prev + 1) % images.length)}
+          title="Média suivant"
+        >
+          <ChevronRight size={24} />
+        </button>
+      </div>
+
+      {/* Fixed Info Panel */}
+      {(images[lightboxIndex]?.title || images[lightboxIndex]?.description || images[lightboxIndex]?.instagramUrl) && (
+        <div className="lightbox-info">
+          <div className="info-content">
+            {images[lightboxIndex]?.title && (
+              <h3>{images[lightboxIndex].title}</h3>
+            )}
+            {images[lightboxIndex]?.description && (
+              <p>{images[lightboxIndex].description}</p>
+            )}
+          </div>
+          
+          <div className="info-actions">
+            {images[lightboxIndex]?.instagramUrl && (
+              <button
+                className="lightbox-instagram"
+                onClick={() => openInstagram(images[lightboxIndex].instagramUrl)}
+              >
+                <Instagram size={16} />
+                Instagram
+              </button>
+            )}
+            
+            <button
+              className="lightbox-share"
+              onClick={() => shareImage(images[lightboxIndex])}
+            >
+              <Share2 size={16} />
+              Partager
+            </button>
+          </div>
+        </div>
       )}
+
+      {/* Fixed Thumbnails 
+      <div className="lightbox-thumbnails">
+        {images.map((media, index) => (
+          <button
+            key={media.id}
+            className={`lightbox-thumbnail ${index === lightboxIndex ? 'active' : ''}`}
+            onClick={() => setLightboxIndex(index)}
+            title={media.title || `Média ${index + 1}`}
+          >
+            {media.type === 'video' ? (
+              <video 
+                src={media.url} 
+                muted 
+                preload="metadata"
+              />
+            ) : (
+              <img 
+                src={media.url} 
+                alt={`Miniature ${index + 1}`}
+                loading="lazy"
+              />
+            )}
+          </button>
+        ))}
+      </div>
+      */}
+    </div>
+  </div>
+)}
     </>
   );
 };

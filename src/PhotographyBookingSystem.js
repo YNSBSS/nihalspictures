@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, User, Phone, MessageSquare, Clock, MapPin, Plus, Minus, CheckCircle, Instagram, Facebook, Twitter } from 'lucide-react';
-import { collection, getDocs, addDoc,  } from 'firebase/firestore';
+
+import { collection, getDocs, addDoc, } from 'firebase/firestore';
+import { Camera, User, Phone, MessageSquare, Clock, MapPin, Plus, Minus, CheckCircle, Instagram, Facebook, Twitter, Heart, Users, Award, Sparkles, Zap } from 'lucide-react';
+import nihalsvideo from './assets/nihalsvideo.mp4'; // Replace with your actual video file path
 import { db } from './firebaseConfig';
 import logo from './logo.jpg';
 import ModernCarousel from './ModernCarousel';
 import './PhotographyBookingSystem.css';
 import ModernHeroSection from './ModernHeroSection';
 import nihalnobcg from './nihalnobcg.png';
+
+
+
 const PhotographyBookingSystem = () => {
   const [servicePackages, setServicePackages] = useState([]);
   const [bookingForm, setBookingForm] = useState({
@@ -33,7 +38,7 @@ const PhotographyBookingSystem = () => {
   // Wilaya options
   const wilayaOptions = [
     'ALGER',
-    'TIPAZA', 
+    'TIPAZA',
     'BOUMERDES',
     'BLIDA',
     'TIZI OUZOU'
@@ -57,42 +62,42 @@ const PhotographyBookingSystem = () => {
     };
 
     const fallbackPackages = [
-      { 
-        id: 'portrait', 
-        name: 'Séance Portrait', 
-        duration: '1-2 heures', 
+      {
+        id: 'portrait',
+        name: 'Séance Portrait',
+        duration: '1-2 heures',
         price: 15000,
         description: 'Séance photo portrait professionnelle en studio ou extérieur',
         image: logo
       },
-      { 
-        id: 'wedding', 
-        name: 'Photographie de Mariage', 
-        duration: '6-8 heures', 
+      {
+        id: 'wedding',
+        name: 'Photographie de Mariage',
+        duration: '6-8 heures',
         price: 80000,
         description: 'Couverture complète de votre journée de mariage',
         image: logo
       },
-      { 
-        id: 'event', 
-        name: 'Photographie d\'Événement', 
-        duration: '3-5 heures', 
+      {
+        id: 'event',
+        name: 'Photographie d\'Événement',
+        duration: '3-5 heures',
         price: 40000,
         description: 'Couverture photo pour vos événements spéciaux',
         image: logo
       },
-      { 
-        id: 'product', 
-        name: 'Photographie de Produit', 
-        duration: '2-3 heures', 
+      {
+        id: 'product',
+        name: 'Photographie de Produit',
+        duration: '2-3 heures',
         price: 25000,
         description: 'Photos professionnelles pour vos produits',
         image: logo
       },
-      { 
-        id: 'family', 
-        name: 'Séance Familiale', 
-        duration: '1-2 heures', 
+      {
+        id: 'family',
+        name: 'Séance Familiale',
+        duration: '1-2 heures',
         price: 20000,
         description: 'Séance photo familiale dans un cadre naturel',
         image: logo
@@ -106,7 +111,7 @@ const PhotographyBookingSystem = () => {
   const handleInputChange = (e) => {
     // Prevent event bubbling that might interfere with key events
     e.stopPropagation();
-    
+
     const { name, value } = e.target;
     setBookingForm(prev => ({
       ...prev,
@@ -118,12 +123,12 @@ const PhotographyBookingSystem = () => {
   const handlePhoneChange = (index, e) => {
     // Accept either event object or direct value for backward compatibility
     const value = typeof e === 'string' ? e : e.target.value;
-    
+
     // Stop event propagation if it's an event object
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
-    
+
     const newPhoneNumbers = [...bookingForm.phoneNumbers];
     newPhoneNumbers[index] = value;
     setBookingForm(prev => ({
@@ -140,7 +145,7 @@ const PhotographyBookingSystem = () => {
       e.stopPropagation();
       return true;
     }
-    
+
     // Allow all other normal typing keys
     return true;
   };
@@ -165,7 +170,7 @@ const PhotographyBookingSystem = () => {
   const handleBookingSubmit = async () => {
     const requiredFields = ['firstName', 'lastName', 'wilaya', 'addressDetails', 'packName', 'date', 'time', 'email'];
     const phoneValid = bookingForm.phoneNumbers[0].trim() !== '';
-    
+
     if (!phoneValid || requiredFields.some(field => !bookingForm[field].trim())) {
       alert('Veuillez remplir tous les champs obligatoires.');
       return;
@@ -183,7 +188,7 @@ const PhotographyBookingSystem = () => {
 
       await addDoc(collection(db, 'bookings'), bookingData);
       alert('Demande de réservation soumise avec succès ! Nous vous contacterons dans les 24 heures pour confirmer votre séance.');
-      
+
       setBookingForm({
         firstName: '',
         lastName: '',
@@ -206,17 +211,13 @@ const PhotographyBookingSystem = () => {
   };
 
   const handleWhatsAppContact = () => {
-    const message = encodeURIComponent(
-      `Bonjour ! Je suis intéressé(e) par une séance photo.\n\n` +
-      `Forfait: ${bookingForm.packName || 'À discuter'}\n` +
-      `Date souhaitée: ${bookingForm.date || 'À discuter'}\n` +
-      `Heure: ${bookingForm.time || 'À discuter'}\n` +
-      `Nom: ${bookingForm.firstName} ${bookingForm.lastName}\n\n` +
-      `Veuillez me contacter pour discuter des détails et confirmer la disponibilité.`
-    );
-    
-    window.open(`https://wa.me/${businessInfo.whatsapp}?text=${message}`, '_blank');
+    // Build a default Instagram DM link (cannot pass message like WhatsApp)
+    const instagramProfile = "https://www.instagram.com/nihal.s_pictures/";
+
+    // Try to open DM link first, fallback to profile
+    window.open(instagramProfile, "_blank");
   };
+
 
   const handleCallNow = () => {
     window.open(`tel:${businessInfo.phone}`, '_self');
@@ -225,32 +226,98 @@ const PhotographyBookingSystem = () => {
   return (
     <div className="mnphoto-page-wrapper">
       {/* Enhanced Hero Section */}
-      <ModernHeroSection 
+      <ModernHeroSection
         logo={nihalnobcg}
         businessInfo={businessInfo}
         onWhatsAppContact={handleWhatsAppContact}
         onCallNow={handleCallNow}
         bookingForm={bookingForm}
       />
-      
+
       {/* Portfolio Carousel */}
       <section className="mnphoto-portfolio-section">
         <div className="mnphoto-section-container">
           <h2 className="mnphoto-section-title">Notre Portfolio</h2>
+
+          <div className="mnphoto-portfolio-intro">
+            <div className="mnphoto-video-container">
+              <video
+                className="mnphoto-portfolio-video"
+                autoPlay
+                controls
+                loop
+                playsInline
+                controlsList="nodownload"
+              >
+                <source src={nihalsvideo} type="video/mp4" />
+                Votre navigateur ne supporte pas les vidéos HTML5.
+              </video>
+              
+            </div>
+
+            <div className="mnphoto-skills-container">
+              <h3 className="mnphoto-skills-title">Notre Expertise</h3>
+              <p className="mnphoto-skills-subtitle">
+                Des moments uniques capturés avec passion et créativité
+              </p>
+
+              <ul className="mnphoto-skills-list">
+                <li className="mnphoto-skill-item">
+                  <Heart className="mnphoto-skill-icon" />
+                  <div>
+                    <div className="mnphoto-skill-text">Photographie de Mariage</div>
+                    <div className="mnphoto-skill-description">Immortalisons votre jour J avec émotion</div>
+                  </div>
+                </li>
+
+                <li className="mnphoto-skill-item">
+                  <Users className="mnphoto-skill-icon" />
+                  <div>
+                    <div className="mnphoto-skill-text">Séances Portrait & Famille</div>
+                    <div className="mnphoto-skill-description">Des portraits authentiques et naturels</div>
+                  </div>
+                </li>
+
+                <li className="mnphoto-skill-item">
+                  <Award className="mnphoto-skill-icon" />
+                  <div>
+                    <div className="mnphoto-skill-text">Événements Professionnels</div>
+                    <div className="mnphoto-skill-description">Couverture complète de vos événements</div>
+                  </div>
+                </li>
+
+                <li className="mnphoto-skill-item">
+                  <Sparkles className="mnphoto-skill-icon" />
+                  <div>
+                    <div className="mnphoto-skill-text">Photographie Créative</div>
+                    <div className="mnphoto-skill-description">Art et créativité dans chaque cliché</div>
+                  </div>
+                </li>
+
+                <li className="mnphoto-skill-item">
+                  <Zap className="mnphoto-skill-icon" />
+                  <div>
+                    <div className="mnphoto-skill-text">Retouche Professionnelle</div>
+                    <div className="mnphoto-skill-description">Sublimation de vos photos avec expertise</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
           <ModernCarousel />
         </div>
       </section>
-      
+
       {/* Services Section */}
       <section className="mnphoto-services-section">
         <div className="mnphoto-section-container">
-          <h2 className="mnphoto-section-title">Nos Services</h2>
+          <h2 className="mnphoto-section-title">Nos Packs</h2>
           <div className="mnphoto-services-grid">
             {servicePackages.filter(pkg => pkg.isActive !== false).map(pkg => (
               <div key={pkg.id} className="mnphoto-service-card">
                 <div className="mnphoto-service-image">
-                  <img 
-                    src={pkg.imageUrl || logo} 
+                  <img
+                    src={pkg.imageUrl || logo}
                     alt={pkg.name}
                     className="mnphoto-service-img"
                   />
@@ -272,7 +339,7 @@ const PhotographyBookingSystem = () => {
                     <span>{pkg.duration}</span>
                   </div>
                   <p className="mnphoto-service-description">{pkg.description}</p>
-                  
+
                   {pkg.features && pkg.features.length > 0 && (
                     <div className="mnphoto-service-features">
                       <h4>Inclus dans ce forfait :</h4>
@@ -286,8 +353,8 @@ const PhotographyBookingSystem = () => {
                       </ul>
                     </div>
                   )}
-                  
-                  <button 
+
+                  <button
                     className="mnphoto-service-select-btn"
                     onClick={() => setBookingForm(prev => ({ ...prev, packName: pkg.name }))}
                   >
@@ -307,7 +374,7 @@ const PhotographyBookingSystem = () => {
             <h2 className="mnphoto-section-title">Réservez Votre Séance</h2>
             <p className="mnphoto-booking-subtitle">Remplissez le formulaire ci-dessous pour faire votre demande</p>
           </div>
-          
+
           <div className="mnphoto-booking-form-card">
             <div className="mnphoto-booking-form">
               {/* Personal Information Section */}
@@ -316,7 +383,7 @@ const PhotographyBookingSystem = () => {
                   <User className="mnphoto-section-icon" />
                   Informations Personnelles
                 </h3>
-                
+
                 <div className="mnphoto-form-grid">
                   <div className="mnphoto-form-group">
                     <label className="mnphoto-form-label">Prénom</label>
@@ -417,7 +484,7 @@ const PhotographyBookingSystem = () => {
                   <MapPin className="mnphoto-section-icon" />
                   Localisation
                 </h3>
-                
+
                 <div className="mnphoto-form-grid">
                   <div className="mnphoto-form-group">
                     <label className="mnphoto-form-label">Wilaya</label>
@@ -460,7 +527,7 @@ const PhotographyBookingSystem = () => {
                   <Camera className="mnphoto-section-icon" />
                   Détails de la Séance
                 </h3>
-                
+
                 <div className="mnphoto-form-grid">
                   <div className="mnphoto-form-group">
                     <label className="mnphoto-form-label">Forfait souhaité</label>
@@ -505,8 +572,8 @@ const PhotographyBookingSystem = () => {
                   </div>
 
                   <div className="mnphoto-form-group mnphoto-full-width">
-                    <label className="mnphoto-form-label" style={{marginBottom: '0.75rem'}}>
-                      Remarques <span style={{color: '#64748b', fontWeight: '400'}}>(optionnel)</span>
+                    <label className="mnphoto-form-label" style={{ marginBottom: '0.75rem' }}>
+                      Remarques <span style={{ color: '#64748b', fontWeight: '400' }}>(optionnel)</span>
                     </label>
                     <textarea
                       name="remarks"
@@ -537,24 +604,24 @@ const PhotographyBookingSystem = () => {
               {/* Form Footer */}
               <div className="mnphoto-form-footer">
                 <div className="mnphoto-disclaimer">
-                  <strong>Note importante :</strong> Il s'agit d'une demande de réservation. 
-                  Nous vous contacterons dans les 24 heures pour confirmer la disponibilité 
+                  <strong>Note importante :</strong> Il s'agit d'une demande de réservation.
+                  Nous vous contacterons dans les 24 heures pour confirmer la disponibilité
                   et finaliser tous les détails de votre séance photo.
                 </div>
-                
+
                 <div className="mnphoto-alternative-contact">
                   <p>Vous préférez nous contacter directement ?</p>
                   <div className="mnphoto-contact-buttons">
-                    <button 
+                    <button
                       type="button"
                       className="mnphoto-contact-btn mnphoto-whatsapp-contact"
                       onClick={handleWhatsAppContact}
                       disabled={submitting}
                     >
                       <MessageSquare className="mnphoto-btn-icon" />
-                      WhatsApp
+                      Instagrame
                     </button>
-                    <button 
+                    <button
                       type="button"
                       className="mnphoto-contact-btn mnphoto-call-contact"
                       onClick={handleCallNow}
@@ -579,7 +646,7 @@ const PhotographyBookingSystem = () => {
             <h3>Nihal's Pictures PHOTOGRAPHY</h3>
             <p>Votre photographe professionnel en Algérie. Nous immortalisons vos moments les plus précieux avec créativité et passion.</p>
           </div>
-          
+
           <div className="mnphoto-footer-contact">
             <h4>Contact</h4>
             <div className="mnphoto-footer-contact-item">
@@ -588,14 +655,14 @@ const PhotographyBookingSystem = () => {
             </div>
             <div className="mnphoto-footer-contact-item">
               <MessageSquare className="mnphoto-footer-icon" />
-              <span>WhatsApp disponible 24h/7j</span>
+              <span>Instagrame disponible 24h/7j</span>
             </div>
             <div className="mnphoto-footer-contact-item">
               <MapPin className="mnphoto-footer-icon" />
               <span>Alger et régions avoisinantes</span>
             </div>
           </div>
-          
+
           <div className="mnphoto-footer-social">
             <h4>Suivez-nous</h4>
             <div className="mnphoto-social-links">
@@ -611,7 +678,7 @@ const PhotographyBookingSystem = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="mnphoto-footer-bottom">
           <p>&copy; 2025 Nihal's Pictures Photography. Tous droits réservés. | Designed with ❤️ for capturing memories</p>
         </div>
