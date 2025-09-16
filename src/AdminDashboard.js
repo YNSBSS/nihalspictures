@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Calendar, Camera, Menu, X, Bell, TrendingUp, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, LogOut, DollarSign, TrendingDown, Image } from 'lucide-react';
 import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
 import { getDocs } from "firebase/firestore";
 import logo from './logo.jpg';
@@ -10,6 +10,9 @@ import BookingsManagement from './BookingsManagement';
 import ServicesManagement from './ServicesManagement';
 import MediaManagement from './MediaManagement';
 import './AdminDashboard.css';
+import { LayoutDashboard, Calendar, Users, Camera, Menu, X, Bell, TrendingUp, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, LogOut, DollarSign, TrendingDown, Image, BarChart } from 'lucide-react';
+import StatsManagement from './StatsManagement';
+
 
 const AdminDashboard = () => {
   const [user, setUser] = useState(null);
@@ -33,7 +36,11 @@ const AdminDashboard = () => {
     monthlyData: [],
     statusData: [],
     paymentData: [],
-    monthlyAnalytics: []
+    monthlyAnalytics: [],
+    totalVisitors: 0,
+    monthlyVisitors: 0,
+    dailyVisitors: 0,
+    visitorData: []
   });
 
   // Check screen size
@@ -60,6 +67,7 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
+  // Load dashboard stats
   // Load dashboard stats
   useEffect(() => {
     if (!user) return;
@@ -99,26 +107,26 @@ const AdminDashboard = () => {
                 totalPaid >= (bookingData.totalPrice || 0) ? 'paid' : 'partial'
             };
           }));
-          
+
           const currentMonth = new Date().getMonth();
           const currentYear = new Date().getFullYear();
-          
+
           // Generate monthly data for the last 12 months
           const monthlyData = [];
           const monthlyAnalytics = [];
-          
+
           for (let i = 11; i >= 0; i--) {
             const month = new Date(currentYear, currentMonth - i, 1);
             const monthBookings = bookings.filter(b => {
               const bookingDate = b.createdAt;
-              return bookingDate.getMonth() === month.getMonth() && 
-                     bookingDate.getFullYear() === month.getFullYear();
+              return bookingDate.getMonth() === month.getMonth() &&
+                bookingDate.getFullYear() === month.getFullYear();
             });
-            
+
             const monthRevenue = monthBookings.reduce((sum, b) => sum + (b.totalPaid || 0), 0);
             const monthPending = monthBookings.reduce((sum, b) => sum + (b.remainingAmount || 0), 0);
             const monthTotal = monthBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-            
+
             monthlyData.push({
               month: month.toLocaleDateString('en-US', { month: 'short' }),
               bookings: monthBookings.length,
@@ -137,14 +145,14 @@ const AdminDashboard = () => {
           }
 
           // Count status for updated status system
-          const statusCounts = { 
-            'Requested': 0, 
-            'confirmed': 0, 
-            'in-progress': 0, 
-            'completed': 0, 
-            'cancelled': 0 
+          const statusCounts = {
+            'Requested': 0,
+            'confirmed': 0,
+            'in-progress': 0,
+            'completed': 0,
+            'cancelled': 0
           };
-          
+
           bookings.forEach(booking => {
             if (statusCounts[booking.status] !== undefined) {
               statusCounts[booking.status]++;
@@ -176,14 +184,14 @@ const AdminDashboard = () => {
           // Current month stats
           const currentMonthBookings = bookings.filter(b => {
             const bookingDate = b.createdAt;
-            return bookingDate.getMonth() === currentMonth && 
-                   bookingDate.getFullYear() === currentYear;
+            return bookingDate.getMonth() === currentMonth &&
+              bookingDate.getFullYear() === currentYear;
           });
 
           const monthlyRevenue = currentMonthBookings.reduce((sum, b) => sum + (b.totalPaid || 0), 0);
           const monthlyPending = currentMonthBookings.reduce((sum, b) => sum + (b.remainingAmount || 0), 0);
-          
-          const stats = {
+
+          const bookingStats = {
             totalBookings: bookings.length,
             pendingBookings: statusCounts['Requested'],
             confirmedBookings: statusCounts.confirmed,
@@ -200,7 +208,11 @@ const AdminDashboard = () => {
             monthlyAnalytics: monthlyAnalytics.slice(-6) // Last 6 months for detailed view
           };
 
-          setDashboardStats(stats);
+          // Update state while preserving visitor data
+          setDashboardStats(prevStats => ({
+            ...prevStats,
+            ...bookingStats
+          }));
         });
 
         return unsubscribe;
@@ -215,10 +227,153 @@ const AdminDashboard = () => {
     };
   }, [user]);
 
+  // Load visitor stats
+  useEffect(() => {
+    if (!user) return;
+
+    const loadVisitorStats = () => {
+      try {
+        const statsRef = doc(db, 'siteStats', 'visitors');
+
+        const unsubscribe = onSnapshot(statsRef, (doc) => {
+          // Initialize default values
+          let totalVisitors = 0;
+          let monthlyVisitors = 0;
+          let visitorData = [];
+
+          if (doc.exists()) {
+            const data = doc.data();
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1;
+
+            // Calculate monthly visitors for current month
+            const monthlyKey = `visits_${currentYear}_${currentMonth}`;
+            monthlyVisitors = data[monthlyKey] || 0;
+            totalVisitors = data.totalVisitors || 0;
+
+            // Generate visitor data for last 6 months
+            for (let i = 5; i >= 0; i--) {
+              const date = new Date(currentYear, currentMonth - 1 - i, 1);
+              const key = `visits_${date.getFullYear()}_${date.getMonth() + 1}`;
+              visitorData.push({
+                month: date.toLocaleDateString('en-US', { month: 'short' }),
+                visitors: data[key] || 0
+              });
+            }
+          } else {
+            // Document doesn't exist yet - set default values
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1;
+
+            // Generate empty visitor data for last 6 months
+            for (let i = 5; i >= 0; i--) {
+              const date = new Date(currentYear, currentMonth - 1 - i, 1);
+              visitorData.push({
+                month: date.toLocaleDateString('en-US', { month: 'short' }),
+                visitors: 0
+              });
+            }
+          }
+
+          const visitorStats = {
+            totalVisitors,
+            monthlyVisitors,
+            visitorData
+          };
+
+          // Update state while preserving booking data
+          setDashboardStats(prevStats => ({
+            ...prevStats,
+            ...visitorStats
+          }));
+        }, (error) => {
+          console.error('Error loading visitor stats:', error);
+          // Set default values on error while preserving other data
+          const currentYear = new Date().getFullYear();
+          const currentMonth = new Date().getMonth() + 1;
+          const visitorData = [];
+
+          for (let i = 5; i >= 0; i--) {
+            const date = new Date(currentYear, currentMonth - 1 - i, 1);
+            visitorData.push({
+              month: date.toLocaleDateString('en-US', { month: 'short' }),
+              visitors: 0
+            });
+          }
+
+          setDashboardStats(prevStats => ({
+            ...prevStats,
+            totalVisitors: 0,
+            monthlyVisitors: 0,
+            visitorData
+          }));
+        });
+
+        return unsubscribe;
+      } catch (error) {
+        console.error('Error setting up visitor stats listener:', error);
+        return null;
+      }
+    };
+
+    const unsubscribe = loadVisitorStats();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [user]);
+  // Load visitor stats
+  useEffect(() => {
+    if (!user) return;
+
+    const loadVisitorStats = () => {
+      try {
+        const statsRef = doc(db, 'siteStats', 'visitors');
+
+        const unsubscribe = onSnapshot(statsRef, (doc) => {
+          if (doc.exists()) {
+            const data = doc.data();
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1;
+
+            // Calculate monthly visitors for current month
+            const monthlyKey = `visits_${currentYear}_${currentMonth}`;
+            const monthlyVisitors = data[monthlyKey] || 0;
+
+            // Generate visitor data for last 6 months
+            const visitorData = [];
+            for (let i = 5; i >= 0; i--) {
+              const date = new Date(currentYear, currentMonth - 1 - i, 1);
+              const key = `visits_${date.getFullYear()}_${date.getMonth() + 1}`;
+              visitorData.push({
+                month: date.toLocaleDateString('en-US', { month: 'short' }),
+                visitors: data[key] || 0
+              });
+            }
+
+            setDashboardStats(prev => ({
+              ...prev,
+              totalVisitors: data.totalVisitors || 0,
+              monthlyVisitors: monthlyVisitors,
+              visitorData
+            }));
+          }
+        });
+
+        return unsubscribe;
+      } catch (error) {
+        console.error('Error loading visitor stats:', error);
+      }
+    };
+
+    const unsubscribe = loadVisitorStats();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [user]);
   const handleLogin = async (e) => {
     e.preventDefault();
     setAuthLoading(true);
-    
+
     try {
       await signInWithEmailAndPassword(auth, loginData.email, loginData.password);
     } catch (error) {
@@ -242,6 +397,7 @@ const AdminDashboard = () => {
     { id: 'gestion-reservations', label: 'Gestion Réservations', icon: Calendar },
     { id: 'services-tarifs', label: 'Services & Tarifs', icon: Camera },
     { id: 'gestion-media', label: 'Gestion Médias', icon: Image },
+    { id: 'gestion-stats', label: 'Statistiques Site', icon: BarChart },
   ];
 
   const getStatusColor = (status) => {
@@ -294,11 +450,11 @@ const AdminDashboard = () => {
       <div className="mn-dash-auth-container">
         <div className="mn-dash-auth-card">
           <div className="mn-dash-auth-header">
-              <img src={logo} alt="mn-photo" style={{width:'80px',borderRadius:"40%"}} />
+            <img src={logo} alt="mn-photo" style={{ width: '80px', borderRadius: "40%" }} />
             <h1>Nihal's pictures Admin</h1>
             <p>Connectez-vous pour accéder au tableau de bord</p>
           </div>
-          
+
           <form onSubmit={handleLogin} className="mn-dash-auth-form">
             <div className="mn-dash-form-group">
               <label htmlFor="email">Email</label>
@@ -306,24 +462,24 @@ const AdminDashboard = () => {
                 id="email"
                 type="email"
                 value={loginData.email}
-                onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                 placeholder="admin@mnphoto.com"
                 required
               />
             </div>
-            
+
             <div className="mn-dash-form-group">
               <label htmlFor="password">Mot de passe</label>
               <input
                 id="password"
                 type="password"
                 value={loginData.password}
-                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 placeholder="Entrez votre mot de passe"
                 required
               />
             </div>
-            
+
             <button type="submit" disabled={authLoading} className="mn-dash-auth-button">
               {authLoading ? 'Connexion...' : 'Se Connecter'}
             </button>
@@ -338,6 +494,7 @@ const AdminDashboard = () => {
       case 'gestion-reservations': return <BookingsManagement />;
       case 'services-tarifs': return <ServicesManagement />;
       case 'gestion-media': return <MediaManagement />;
+      case 'gestion-stats': return <StatsManagement />;
       default:
         return (
           <div className="mn-dash-content">
@@ -353,7 +510,7 @@ const AdminDashboard = () => {
                     <span className="mn-dash-notification-badge">{dashboardStats.pendingBookings}</span>
                   )}
                 </div>
-                
+
                 <button onClick={handleLogout} className="mn-dash-logout-button">
                   <LogOut className="mn-dash-logout-icon" />
                   <span>Déconnexion</span>
@@ -362,6 +519,31 @@ const AdminDashboard = () => {
             </div>
 
             <div className="mn-dash-stats-grid">
+              <div className="mn-dash-stat-card">
+                <div className="mn-dash-stat-header">
+                  <div className="mn-dash-stat-content">
+                    <p className="mn-dash-stat-label">Visiteurs Totaux</p>
+                    <p className="mn-dash-stat-value">{dashboardStats.totalVisitors}</p>
+                  </div>
+                  <div className="mn-dash-stat-icon mn-dash-bg-purple">
+                    <Users className="mn-dash-icon-purple" />
+                  </div>
+                </div>
+                <p className="mn-dash-stat-description">Visiteurs uniques</p>
+              </div>
+
+              <div className="mn-dash-stat-card">
+                <div className="mn-dash-stat-header">
+                  <div className="mn-dash-stat-content">
+                    <p className="mn-dash-stat-label">Visiteurs Ce Mois</p>
+                    <p className="mn-dash-stat-value mn-dash-text-blue">{dashboardStats.monthlyVisitors}</p>
+                  </div>
+                  <div className="mn-dash-stat-icon mn-dash-bg-blue">
+                    <TrendingUp className="mn-dash-icon-blue" />
+                  </div>
+                </div>
+                <p className="mn-dash-stat-description">Nouveaux ce mois</p>
+              </div>
               <div className="mn-dash-stat-card">
                 <div className="mn-dash-stat-header">
                   <div className="mn-dash-stat-content">
@@ -440,8 +622,48 @@ const AdminDashboard = () => {
                 <p className="mn-dash-stat-description">Revenus totaux encaissés</p>
               </div>
             </div>
-
             <div className="mn-dash-charts-grid">
+              <div className="mn-dash-chart-card">
+                <div className="mn-dash-chart-header">
+                  <h3 className="mn-dash-chart-title">Évolution des Visiteurs</h3>
+                  <Users className="mn-dash-chart-icon" />
+                </div>
+                <div className="mn-dash-chart-container">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={dashboardStats.visitorData}>
+                      <defs>
+                        <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
+                      <YAxis stroke="#64748b" fontSize={12} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="visitors"
+                        stroke="#8b5cf6"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorVisitors)"
+                        name="Visiteurs"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+            <div className="mn-dash-charts-grid">
+
               <div className="mn-dash-chart-card">
                 <div className="mn-dash-chart-header">
                   <h3 className="mn-dash-chart-title">Évolution Mensuelle - Réservations & Revenus</h3>
@@ -452,22 +674,22 @@ const AdminDashboard = () => {
                     <AreaChart data={dashboardStats.monthlyData}>
                       <defs>
                         <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
                       <YAxis stroke="#64748b" fontSize={12} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{
                           backgroundColor: '#ffffff',
                           border: '1px solid #e2e8f0',
@@ -528,7 +750,7 @@ const AdminDashboard = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{
                           backgroundColor: '#ffffff',
                           border: '1px solid #e2e8f0',
@@ -660,8 +882,8 @@ const AdminDashboard = () => {
       <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mn-dash-sidebar-toggle">
         {sidebarOpen ? <X className="mn-dash-toggle-icon" /> : <Menu className="mn-dash-toggle-icon" />}
       </button>
-      
-      <div 
+
+      <div
         className={`mn-dash-sidebar ${sidebarOpen ? 'mn-dash-sidebar-open' : 'mn-dash-sidebar-collapsed'}`}
         onMouseEnter={() => !isMobile && setSidebarOpen(true)}
         onMouseLeave={() => !isMobile && setSidebarOpen(false)}
@@ -669,7 +891,7 @@ const AdminDashboard = () => {
         <div className="mn-dash-sidebar-header">
           {sidebarOpen && (
             <div className="mn-dash-brand">
-              <img src={logo} alt="mn-photo" style={{width:'80px',borderRadius:"40%"}} />
+              <img src={logo} alt="mn-photo" style={{ width: '80px', borderRadius: "40%" }} />
               <span className="mn-dash-brand-name">Nihal's pictures</span>
             </div>
           )}

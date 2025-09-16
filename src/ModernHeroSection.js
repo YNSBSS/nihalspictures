@@ -1,6 +1,8 @@
 import React from 'react';
-import { Camera, Award, Star, CheckCircle, Phone, ArrowDown,Instagram } from 'lucide-react';
+import { Camera, Award, Star, CheckCircle, Phone, ArrowDown, Instagram } from 'lucide-react';
+import { useHeroStats } from './hooks/useHeroStats';
 import './ModernHeroSection.css';
+
 const ModernHeroSection = ({ 
   logo, 
   businessInfo, 
@@ -8,6 +10,7 @@ const ModernHeroSection = ({
   onCallNow,
   bookingForm 
 }) => {
+  const { stats, loading } = useHeroStats();
 
   const scrollToNext = () => {
     const nextSection = document.querySelector('.mnphoto-portfolio-section');
@@ -49,11 +52,10 @@ const ModernHeroSection = ({
                 
                 <div className="brand-tagline-container">
                   <p className="brand-essence-text">
-                    Excellence photographique • Art visuel moderne • Moments éternels
+                    Qualité excellente • Art visuel moderne • Moments éternels
                   </p>
                 </div>
               </div>
-              <div></div>
             </div>
 
             {/* Elite Features Showcase */}
@@ -65,7 +67,7 @@ const ModernHeroSection = ({
                 </div>
                 <div className="feature-details">
                   <h3 className="feature-headline">Photographe Certifié</h3>
-                  <p className="feature-description">4+ années d'expérience</p>
+                  <p className="feature-description">+5 années d'expérience</p>
                 </div>
               </div>
 
@@ -111,7 +113,7 @@ const ModernHeroSection = ({
                   onClick={onWhatsAppContact}
                 >
                   <Instagram className="btn-icon" />
-                  <span>Réserver sur Instagrame</span>
+                  <span>Réserver sur Instagram</span>
                 </button>
 
                 <button 
@@ -139,27 +141,29 @@ const ModernHeroSection = ({
         </div>
       </section>
 
-      {/* Statistics Showcase */}
+      {/* Dynamic Statistics Showcase */}
       <section className="statistics-showcase">
         <div className="stats-container">
-          <div className="stat-display-item">
-            <div className="stat-figure">500+</div>
-            <div className="stat-description">Clients Satisfaits</div>
-          </div>
-          <div className="stat-separator" />
-          <div className="stat-display-item">
-            <div className="stat-figure">50+</div>
-            <div className="stat-description">Mariages Immortalisés</div>
-          </div>
-          <div className="stat-separator" />
-          <div className="stat-display-item">
-            <div className="stat-figure">1000+</div>
-            <div className="stat-description">Photos Professionnelles</div>
-          </div>
+          {loading ? (
+            <div className="stats-loading">
+              <div className="loading-spinner"></div>
+              <span>Chargement des statistiques...</span>
+            </div>
+          ) : (
+            stats.map((stat, index) => (
+              <React.Fragment key={stat.id}>
+                {index > 0 && <div className="stat-separator" />}
+                <div className="stat-display-item">
+                  <div className="stat-figure">
+                    {stat.value.toLocaleString()}{stat.suffix}
+                  </div>
+                  <div className="stat-description">{stat.label}</div>
+                </div>
+              </React.Fragment>
+            ))
+          )}
         </div>
       </section>
-
-
     </>
   );
 };

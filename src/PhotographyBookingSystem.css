@@ -874,3 +874,103 @@
 .mnphoto-portfolio-video::-webkit-media-controls-volume-slider {
   filter: sepia(1) hue-rotate(25deg) brightness(1.2);
 }
+
+/* Radio Button Styles */
+.mnphoto-radio-group {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.mnphoto-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mnphoto-radio-option:hover {
+  transform: translateX(2px);
+}
+
+.mnphoto-radio-input {
+  display: none;
+}
+
+.mnphoto-radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(227, 178, 60, 0.3);
+  border-radius: 50%;
+  background: rgba(245, 235, 221, 0.8);
+  backdrop-filter: blur(10px);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.mnphoto-radio-input:checked + .mnphoto-radio-custom {
+  border-color: #E3B23C;
+  background: rgba(227, 178, 60, 0.1);
+}
+
+.mnphoto-radio-input:checked + .mnphoto-radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, #E3B23C 0%, #C47452 100%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 4px rgba(227, 178, 60, 0.3);
+}
+
+.mnphoto-radio-label {
+  color: #7C6F65;
+  font-weight: 600;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.mnphoto-radio-option:hover .mnphoto-radio-custom {
+  border-color: rgba(227, 178, 60, 0.5);
+  transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mnphoto-radio-group {
+    gap: 1.5rem;
+  }
+  
+  .mnphoto-radio-custom {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .mnphoto-radio-input:checked + .mnphoto-radio-custom::after {
+    width: 8px;
+    height: 8px;
+  }
+}
+/* Wedding venue field styling */
+.mnphoto-salle-input-wrapper {
+  position: relative;
+}
+
+.mnphoto-salle-input-wrapper::before {
+  content: '🏛️';
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.mnphoto-salle-input-wrapper .mnphoto-form-input {
+  padding-left: 3rem;
+}

@@ -9,6 +9,7 @@ import ModernCarousel from './ModernCarousel';
 import './PhotographyBookingSystem.css';
 import ModernHeroSection from './ModernHeroSection';
 import nihalnobcg from './nihalnobcg.png';
+import useVisitorCounter from './useVisitorCounter';
 
 
 
@@ -25,10 +26,15 @@ const PhotographyBookingSystem = () => {
     time: '',
     email: '',
     remarks: '',
+    cortege: '',
+    salleName: '',
     status: 'Requested'
   });
   const [submitting, setSubmitting] = useState(false);
-
+  const { isNewVisitor } = useVisitorCounter();
+  if (isNewVisitor) {
+    console.log("Bienvenue sur le site de Nihal's Pictures !");
+  }
   // Business contact information
   const businessInfo = {
     phone: '0561696809',
@@ -56,7 +62,7 @@ const PhotographyBookingSystem = () => {
         }));
         setServicePackages(packages.length > 0 ? packages : fallbackPackages);
       } catch (error) {
-        console.error('Erreur lors du chargement des forfaits:', error);
+        console.error('Erreur lors du chargement des packs:', error);
         setServicePackages(fallbackPackages);
       }
     };
@@ -78,30 +84,6 @@ const PhotographyBookingSystem = () => {
         description: 'Couverture complète de votre journée de mariage',
         image: logo
       },
-      {
-        id: 'event',
-        name: 'Photographie d\'Événement',
-        duration: '3-5 heures',
-        price: 40000,
-        description: 'Couverture photo pour vos événements spéciaux',
-        image: logo
-      },
-      {
-        id: 'product',
-        name: 'Photographie de Produit',
-        duration: '2-3 heures',
-        price: 25000,
-        description: 'Photos professionnelles pour vos produits',
-        image: logo
-      },
-      {
-        id: 'family',
-        name: 'Séance Familiale',
-        duration: '1-2 heures',
-        price: 20000,
-        description: 'Séance photo familiale dans un cadre naturel',
-        image: logo
-      }
     ];
 
     loadServicePackages();
@@ -200,6 +182,8 @@ const PhotographyBookingSystem = () => {
         time: '',
         email: '',
         remarks: '',
+        cortege: '',
+        salleName: '',
         status: 'Requested'
       });
     } catch (error) {
@@ -243,7 +227,6 @@ const PhotographyBookingSystem = () => {
             <div className="mnphoto-video-container">
               <video
                 className="mnphoto-portfolio-video"
-                autoPlay
                 controls
                 loop
                 playsInline
@@ -252,7 +235,7 @@ const PhotographyBookingSystem = () => {
                 <source src={nihalsvideo} type="video/mp4" />
                 Votre navigateur ne supporte pas les vidéos HTML5.
               </video>
-              
+
             </div>
 
             <div className="mnphoto-skills-container">
@@ -265,7 +248,7 @@ const PhotographyBookingSystem = () => {
                 <li className="mnphoto-skill-item">
                   <Heart className="mnphoto-skill-icon" />
                   <div>
-                    <div className="mnphoto-skill-text">Photographie de Mariage</div>
+                    <div className="mnphoto-skill-text">Tout type d'évenement</div>
                     <div className="mnphoto-skill-description">Immortalisons votre jour J avec émotion</div>
                   </div>
                 </li>
@@ -342,7 +325,7 @@ const PhotographyBookingSystem = () => {
 
                   {pkg.features && pkg.features.length > 0 && (
                     <div className="mnphoto-service-features">
-                      <h4>Inclus dans ce forfait :</h4>
+                      <h4>Inclus dans ce pack :</h4>
                       <ul className="mnphoto-features-list">
                         {pkg.features.map((feature, index) => (
                           <li key={index} className="mnphoto-feature-item">
@@ -358,7 +341,7 @@ const PhotographyBookingSystem = () => {
                     className="mnphoto-service-select-btn"
                     onClick={() => setBookingForm(prev => ({ ...prev, packName: pkg.name }))}
                   >
-                    Choisir ce forfait
+                    Choisir ce pack
                   </button>
                 </div>
               </div>
@@ -518,6 +501,22 @@ const PhotographyBookingSystem = () => {
                       autoComplete="street-address"
                     />
                   </div>
+                  <div className="mnphoto-form-group mnphoto-full-width">
+                    <label className="mnphoto-form-label">
+                      Nom de la salle de mariage <span style={{ color: '#64748b', fontWeight: '400' }}>(optionnel)</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="salleName"
+                      value={bookingForm.salleName}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
+                      className="mnphoto-form-input"
+                      placeholder="Nom de la salle des fêtes ou lieu de réception"
+                      disabled={submitting}
+                      autoComplete="off"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -530,7 +529,7 @@ const PhotographyBookingSystem = () => {
 
                 <div className="mnphoto-form-grid">
                   <div className="mnphoto-form-group">
-                    <label className="mnphoto-form-label">Forfait souhaité</label>
+                    <label className="mnphoto-form-label">pack souhaité</label>
                     <input
                       type="text"
                       name="packName"
@@ -538,7 +537,7 @@ const PhotographyBookingSystem = () => {
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
                       className="mnphoto-form-input"
-                      placeholder="Nom du forfait"
+                      placeholder="Nom du pack"
                       disabled={submitting}
                       required
                     />
@@ -570,6 +569,37 @@ const PhotographyBookingSystem = () => {
                       required
                     />
                   </div>
+                  <div className="mnphoto-form-group mnphoto-full-width">
+                    <label className="mnphoto-form-label">Cortège</label>
+                    <div className="mnphoto-radio-group">
+                      <label className="mnphoto-radio-option">
+                        <input
+                          type="radio"
+                          name="cortege"
+                          value="oui"
+                          checked={bookingForm.cortege === 'oui'}
+                          onChange={handleInputChange}
+                          className="mnphoto-radio-input"
+                          disabled={submitting}
+                        />
+                        <span className="mnphoto-radio-custom"></span>
+                        <span className="mnphoto-radio-label">Oui</span>
+                      </label>
+                      <label className="mnphoto-radio-option">
+                        <input
+                          type="radio"
+                          name="cortege"
+                          value="non"
+                          checked={bookingForm.cortege === 'non'}
+                          onChange={handleInputChange}
+                          className="mnphoto-radio-input"
+                          disabled={submitting}
+                        />
+                        <span className="mnphoto-radio-custom"></span>
+                        <span className="mnphoto-radio-label">Non</span>
+                      </label>
+                    </div>
+                  </div>
 
                   <div className="mnphoto-form-group mnphoto-full-width">
                     <label className="mnphoto-form-label" style={{ marginBottom: '0.75rem' }}>
@@ -587,6 +617,7 @@ const PhotographyBookingSystem = () => {
                     />
                   </div>
                 </div>
+
               </div>
 
               {/* Form Actions */}

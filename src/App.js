@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
 // Import components
 import PhotographyBookingSystem from './PhotographyBookingSystem';
 import AdminDashboard from './AdminDashboard';
+import { initializeHeroStats } from './initializeHeroStats';
 
 function App() {
+  useEffect(() => {
+initializeHeroStats ();
+  }, []);
   return (
     <Router>
       <div className="App">
