@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Search, Eye, Edit, Trash2, X, Clock, Phone, Mail, MapPin, Camera, DollarSign, Download, RefreshCw, CreditCard, Receipt, ArrowUpDown, Printer, FileText } from 'lucide-react';
+import { Calendar, Search, Eye, Edit, Trash2, X, Clock, Phone, Mail, MapPin, Camera, DollarSign, Download, RefreshCw, CreditCard, Receipt, ArrowUpDown, Printer, FileText, Building, MessageSquare, Users } from 'lucide-react';
 import { collection, onSnapshot, query, orderBy, updateDoc, deleteDoc, doc, addDoc, getDocs, where } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import './BookingsManagement.css';
@@ -45,7 +45,9 @@ const BookingsManagement = () => {
     { value: 'date', label: 'Session Date' },
     { value: 'firstName', label: 'Client Name' },
     { value: 'totalPrice', label: 'Total Price' },
-    { value: 'status', label: 'Status' }
+    { value: 'status', label: 'Status' },
+    { value: 'wilaya', label: 'Wilaya' },
+    { value: 'packName', label: 'Service Package' }
   ];
 
   useEffect(() => {
@@ -106,13 +108,17 @@ const BookingsManagement = () => {
   useEffect(() => {
     let filtered = [...bookings];
 
-    // Search filter
+    // Search filter - now includes all relevant fields
     if (searchTerm) {
       filtered = filtered.filter(booking =>
         `${booking.firstName} ${booking.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.phoneNumbers?.some(phone => phone.includes(searchTerm)) ||
-        booking.packName?.toLowerCase().includes(searchTerm.toLowerCase())
+        booking.packName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.wilaya?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.addressDetails?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.salleName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.remarks?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -279,19 +285,28 @@ const BookingsManagement = () => {
 
   const exportBookings = () => {
     const csvContent = [
-      ['Date', 'Time', 'Client Name', 'Email', 'Phone', 'Service', 'Status', 'Total Price', 'Paid Amount', 'Remaining', 'Payment Status', 'Created At'].join(','),
+      [
+        'Date', 'Time', 'Client Name', 'Email', 'Phone Numbers', 'Wilaya', 'Address Details', 
+        'Venue/Salle', 'Service', 'Cortege', 'Status', 'Total Price', 'Paid Amount', 
+        'Remaining', 'Payment Status', 'Remarks', 'Created At'
+      ].join(','),
       ...filteredBookings.map(booking => [
         booking.date,
         booking.time,
         `${booking.firstName} ${booking.lastName}`,
         booking.email,
         booking.phoneNumbers?.join(' | ') || '',
+        booking.wilaya || '',
+        booking.addressDetails || '',
+        booking.salleName || '',
         booking.packName,
+        booking.cortege || '',
         booking.status,
         booking.totalPrice || 0,
         booking.totalPaid || 0,
         booking.remainingAmount || 0,
         booking.paymentStatus,
+        `"${booking.remarks || ''}"`,
         booking.createdAt.toLocaleDateString()
       ].join(','))
     ].join('\n');
@@ -300,7 +315,7 @@ const BookingsManagement = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `bookings-enhanced-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `bookings-complete-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -633,7 +648,7 @@ const downloadVoucherPDF = async () => {
       <div className="ebms-header-section">
         <div className="ebms-header-content">
           <h1 className="ebms-main-title">Enhanced Bookings Management</h1>
-          <p className="ebms-main-subtitle">Complete booking management with pricing and payment tracking</p>
+          <p className="ebms-main-subtitle">Complete booking management with all form fields and payment tracking</p>
         </div>
         <div className="ebms-header-actions">
           <button onClick={exportBookings} className="ebms-export-btn">
@@ -653,7 +668,7 @@ const downloadVoucherPDF = async () => {
             <Search className="ebms-search-icon" />
             <input
               type="text"
-              placeholder="Search by name, email, phone, or service..."
+              placeholder="Search by name, email, phone, service, location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="ebms-search-input"
@@ -713,7 +728,8 @@ const downloadVoucherPDF = async () => {
             <thead className="ebms-table-header">
               <tr>
                 <th className="ebms-table-th">Client</th>
-                <th className="ebms-table-th">Service</th>
+                <th className="ebms-table-th">Location</th>
+                <th className="ebms-table-th">Service Details</th>
                 <th className="ebms-table-th">Date & Time</th>
                 <th className="ebms-table-th">Status</th>
                 <th className="ebms-table-th">Pricing</th>
@@ -724,7 +740,7 @@ const downloadVoucherPDF = async () => {
             <tbody className="ebms-table-body">
               {filteredBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="ebms-empty-row">
+                  <td colSpan={8} className="ebms-empty-row">
                     No bookings found matching your criteria
                   </td>
                 </tr>
@@ -736,10 +752,44 @@ const downloadVoucherPDF = async () => {
                         <div className="ebms-client-name">{booking.firstName} {booking.lastName}</div>
                         <div className="ebms-client-email">{booking.email}</div>
                         <div className="ebms-client-phone">{booking.phoneNumbers?.[0]}</div>
+                        {booking.phoneNumbers?.length > 1 && (
+                          <div className="ebms-client-phone-extra">
+                            +{booking.phoneNumbers.length - 1} more
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="ebms-table-cell">
-                      <div className="ebms-service-name">{booking.packName}</div>
+                      <div className="ebms-location-info">
+                        <div className="ebms-wilaya">{booking.wilaya}</div>
+                        <div className="ebms-address" title={booking.addressDetails}>
+                          {booking.addressDetails?.substring(0, 30)}
+                          {booking.addressDetails?.length > 30 && '...'}
+                        </div>
+                        {booking.salleName && (
+                          <div className="ebms-venue">
+                            <Building className="ebms-venue-icon" size={12} />
+                            {booking.salleName}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="ebms-table-cell">
+                      <div className="ebms-service-info">
+                        <div className="ebms-service-name">{booking.packName}</div>
+                        {booking.cortege && (
+                          <div className="ebms-cortege">
+                            <Users className="ebms-cortege-icon" size={12} />
+                            Cortège: {booking.cortege}
+                          </div>
+                        )}
+                        {booking.remarks && (
+                          <div className="ebms-remarks" title={booking.remarks}>
+                            <MessageSquare className="ebms-remarks-icon" size={12} />
+                            Notes available
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="ebms-table-cell">
                       <div className="ebms-booking-date">{formatDate(booking.date)}</div>
@@ -756,12 +806,12 @@ const downloadVoucherPDF = async () => {
                     <td className="ebms-table-cell">
                       <div className="ebms-pricing-info">
                         <div className="ebms-total-price">
-                          Total:  {booking.totalPrice?.toLocaleString() || 'Not Set'} DZD
+                          Total: {booking.totalPrice?.toLocaleString() || 'Not Set'} DZD
                         </div>
                         {booking.totalPrice && (
                           <>
                             <div className="ebms-paid-amount">Paid: {booking.totalPaid?.toLocaleString() || '0'} DZD</div>
-                            <div className="ebms-remaining-amount">Remaining:  {booking.remainingAmount?.toLocaleString() || '0'} DZD</div>
+                            <div className="ebms-remaining-amount">Remaining: {booking.remainingAmount?.toLocaleString() || '0'} DZD</div>
                           </>
                         )}
                       </div>
@@ -958,8 +1008,15 @@ const downloadVoucherPDF = async () => {
                       <div className="ebms-client-details">
                         <p><strong>Nom:</strong> {selectedBooking.firstName} {selectedBooking.lastName}</p>
                         <p><strong>Email:</strong> {selectedBooking.email}</p>
-                        <p><strong>TELEPHONE:</strong> {selectedBooking.phoneNumbers?.[0]}</p>
-                        <p><strong>Address:</strong> {selectedBooking.wilaya} - {selectedBooking.addressDetails}</p>
+                        <p><strong>Téléphone:</strong> {selectedBooking.phoneNumbers?.[0]}</p>
+                        {selectedBooking.phoneNumbers?.length > 1 && (
+                          <p><strong>Téléphone 2:</strong> {selectedBooking.phoneNumbers?.[1]}</p>
+                        )}
+                        <p><strong>Wilaya:</strong> {selectedBooking.wilaya}</p>
+                        <p><strong>Adresse:</strong> {selectedBooking.addressDetails}</p>
+                        {selectedBooking.salleName && (
+                          <p><strong>Salle:</strong> {selectedBooking.salleName}</p>
+                        )}
                       </div>
                     </div>
 
@@ -968,7 +1025,10 @@ const downloadVoucherPDF = async () => {
                       <div className="ebms-service-details">
                         <p><strong>Service:</strong> {selectedBooking.packName}</p>
                         <p><strong>Date:</strong> {formatDate(selectedBooking.date)}</p>
-                        <p><strong>Time:</strong> {selectedBooking.time}</p>
+                        <p><strong>Heure:</strong> {selectedBooking.time}</p>
+                        {selectedBooking.cortege && (
+                          <p><strong>Cortège:</strong> {selectedBooking.cortege}</p>
+                        )}
                         <p><strong>Status:</strong>
                           <span
                             className="ebms-status-inline"
@@ -977,6 +1037,9 @@ const downloadVoucherPDF = async () => {
                             {statusOptions.find(s => s.value === selectedBooking.status)?.label || selectedBooking.status}
                           </span>
                         </p>
+                        {selectedBooking.remarks && (
+                          <p><strong>Notes:</strong> {selectedBooking.remarks}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1188,7 +1251,7 @@ const downloadVoucherPDF = async () => {
         <div className="ebms-modal-overlay">
           <div className="ebms-booking-modal">
             <div className="ebms-modal-header">
-              <h2 className="ebms-modal-title">Booking Details</h2>
+              <h2 className="ebms-modal-title">Complete Booking Details</h2>
               <button onClick={() => setShowBookingModal(false)} className="ebms-close-btn">
                 <X className="ebms-close-icon" />
               </button>
@@ -1219,16 +1282,27 @@ const downloadVoucherPDF = async () => {
                       <span className="ebms-contact-text">{phone}</span>
                     </div>
                   ))}
+                </div>
+
+                <div className="ebms-location-section">
+                  <h3 className="ebms-section-title">Location Information</h3>
                   <div className="ebms-contact-row">
                     <MapPin className="ebms-contact-icon" />
-                    <span className="ebms-contact-text">
-                      {selectedBooking.wilaya} - {selectedBooking.addressDetails}
-                    </span>
+                    <div className="ebms-location-details">
+                      <div className="ebms-wilaya-text">{selectedBooking.wilaya}</div>
+                      <div className="ebms-address-text">{selectedBooking.addressDetails}</div>
+                      {selectedBooking.salleName && (
+                        <div className="ebms-venue-text">
+                          <Building className="ebms-venue-icon" size={14} />
+                          Venue: {selectedBooking.salleName}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 <div className="ebms-booking-section">
-                  <h3 className="ebms-section-title">Booking Information</h3>
+                  <h3 className="ebms-section-title">Service & Booking Information</h3>
                   <div className="ebms-booking-row">
                     <Camera className="ebms-booking-icon" />
                     <span className="ebms-booking-text">{selectedBooking.packName}</span>
@@ -1241,6 +1315,12 @@ const downloadVoucherPDF = async () => {
                     <Clock className="ebms-booking-icon" />
                     <span className="ebms-booking-text">{selectedBooking.time}</span>
                   </div>
+                  {selectedBooking.cortege && (
+                    <div className="ebms-booking-row">
+                      <Users className="ebms-booking-icon" />
+                      <span className="ebms-booking-text">Cortège: {selectedBooking.cortege}</span>
+                    </div>
+                  )}
                   <div className="ebms-booking-row">
                     <span className="ebms-booking-label">Status:</span>
                     <span
@@ -1310,7 +1390,7 @@ const downloadVoucherPDF = async () => {
               {/* Notes Section */}
               {selectedBooking.remarks && (
                 <div className="ebms-notes-section">
-                  <h3 className="ebms-section-title">Client Notes</h3>
+                  <h3 className="ebms-section-title">Client Notes & Remarks</h3>
                   <div className="ebms-notes-content">
                     <p className="ebms-notes-text">{selectedBooking.remarks}</p>
                   </div>
@@ -1413,10 +1493,48 @@ const downloadVoucherPDF = async () => {
               box-shadow: none !important;
             }
           }
-        `
+          
+          .ebms-venue-icon {
+            display: inline;
+            margin-right: 4px;
+            vertical-align: middle;
+          }
+          
+          .ebms-venue-text {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            font-size: 13px;
+            color: #64748b;
+          }
+          
+          .ebms-cortege-icon, .ebms-remarks-icon {
+            margin-right: 4px;
+            vertical-align: middle;
+          }
+          
+          .ebms-cortege, .ebms-remarks {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+          }
+          
+          .ebms-wilaya-text {
+            font-weight: 600;
+            color: #1f2937;
+          }
+          
+          .ebms-address-text {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 2px;
+          }
+        ` 
       }} />
     </div>
   );
-};
-
+}
 export default BookingsManagement;
