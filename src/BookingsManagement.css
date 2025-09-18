@@ -1832,3 +1832,50 @@
     gap: 15px;
   }
 }
+/* Add these CSS styles to BookingsManagement.css */
+
+/* Couple names styling in table */
+.ebms-couple-names {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.ebms-spouse-name {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.ebms-spouse-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Couple details styling in modal */
+.ebms-couple-details {
+  margin: 12px 0;
+  padding: 8px 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ebms-couple-details .ebms-contact-row {
+  margin: 8px 0;
+}
+
+.ebms-couple-details .ebms-contact-text {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ebms-couple-names {
+    margin-top: 6px;
+  }
+  
+  .ebms-spouse-name {
+    font-size: 11px;
+  }
+}

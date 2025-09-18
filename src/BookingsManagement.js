@@ -118,7 +118,9 @@ const BookingsManagement = () => {
         booking.wilaya?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.addressDetails?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.salleName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.remarks?.toLowerCase().includes(searchTerm.toLowerCase())
+        booking.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.husbandFirstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||    // NEW
+        booking.wifeFirstName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -153,8 +155,8 @@ const BookingsManagement = () => {
             return bookingDate >= today && bookingDate <= filterDate;
           });
           break;
-          default:
-            break;
+        default:
+          break;
       }
     }
 
@@ -286,14 +288,16 @@ const BookingsManagement = () => {
   const exportBookings = () => {
     const csvContent = [
       [
-        'Date', 'Time', 'Client Name', 'Email', 'Phone Numbers', 'Wilaya', 'Address Details', 
-        'Venue/Salle', 'Service', 'Cortege', 'Status', 'Total Price', 'Paid Amount', 
+        'Date', 'Time', 'Client Name', 'Husband First Name', 'Wife First Name', 'Email', 'Phone Numbers', 'Wilaya', 'Address Details',
+        'Venue/Salle', 'Service', 'Cortege', 'Status', 'Total Price', 'Paid Amount',
         'Remaining', 'Payment Status', 'Remarks', 'Created At'
       ].join(','),
       ...filteredBookings.map(booking => [
         booking.date,
         booking.time,
         `${booking.firstName} ${booking.lastName}`,
+        booking.husbandFirstName || '',     // NEW
+        booking.wifeFirstName || '',        // NEW
         booking.email,
         booking.phoneNumbers?.join(' | ') || '',
         booking.wilaya || '',
@@ -320,11 +324,11 @@ const BookingsManagement = () => {
     window.URL.revokeObjectURL(url);
   };
 
-const printVoucher = () => {
-  const printContent = voucherRef.current;
-  const windowPrint = window.open('', '', 'width=800,height=1000');
-  
-  windowPrint.document.write(`
+  const printVoucher = () => {
+    const printContent = voucherRef.current;
+    const windowPrint = window.open('', '', 'width=800,height=1000');
+
+    windowPrint.document.write(`
     <!DOCTYPE html>
     <html>
       <head>
@@ -587,52 +591,52 @@ const printVoucher = () => {
       </body>
     </html>
   `);
-  
-  windowPrint.document.close();
-  windowPrint.focus();
-  windowPrint.print();
-  windowPrint.close();
-};
 
-const downloadVoucherPDF = async () => {
-  try {
-    // Get the voucher container element
-    const element = voucherRef.current;
-    
-    // Configure html2canvas options for better quality
-    const canvas = await html2canvas(element, {
-      scale: 2, // Higher resolution
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      width: element.scrollWidth,
-      height: element.scrollHeight,
-      scrollX: 0,
-      scrollY: 0
-    });
+    windowPrint.document.close();
+    windowPrint.focus();
+    windowPrint.print();
+    windowPrint.close();
+  };
 
-    // Get canvas dimensions
-    const imgWidth = 210; // A4 width in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
-    // Create PDF
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgData = canvas.toDataURL('image/png');
-    
-    // Add image to PDF
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-    
-    // Generate filename with booking ID and date
-    const filename = `payment-voucher-${selectedBooking.id.slice(-8).toUpperCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
-    
-    // Save the PDF
-    pdf.save(filename);
-    
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    alert('Error generating PDF. Please try again.');
-  }
-};
+  const downloadVoucherPDF = async () => {
+    try {
+      // Get the voucher container element
+      const element = voucherRef.current;
+
+      // Configure html2canvas options for better quality
+      const canvas = await html2canvas(element, {
+        scale: 2, // Higher resolution
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        scrollX: 0,
+        scrollY: 0
+      });
+
+      // Get canvas dimensions
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // Create PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+      // Generate filename with booking ID and date
+      const filename = `payment-voucher-${selectedBooking.id.slice(-8).toUpperCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
+
+      // Save the PDF
+      pdf.save(filename);
+
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
+  };
 
   if (loading) {
     return (
@@ -750,6 +754,23 @@ const downloadVoucherPDF = async () => {
                     <td className="ebms-table-cell">
                       <div className="ebms-client-info">
                         <div className="ebms-client-name">{booking.firstName} {booking.lastName}</div>
+
+                        {/* NEW: Show husband and wife names if available */}
+                        {(booking.husbandFirstName || booking.wifeFirstName) && (
+                          <div className="ebms-couple-names">
+                            {booking.husbandFirstName && (
+                              <div className="ebms-spouse-name">
+                                <span className="ebms-spouse-label">Marié:</span> {booking.husbandFirstName}
+                              </div>
+                            )}
+                            {booking.wifeFirstName && (
+                              <div className="ebms-spouse-name">
+                                <span className="ebms-spouse-label">Mariée:</span> {booking.wifeFirstName}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         <div className="ebms-client-email">{booking.email}</div>
                         <div className="ebms-client-phone">{booking.phoneNumbers?.[0]}</div>
                         {booking.phoneNumbers?.length > 1 && (
@@ -986,7 +1007,7 @@ const downloadVoucherPDF = async () => {
                 <div className="ebms-voucher-header">
                   <div className="ebms-voucher-logo">
                     <div className="ebms-logo-placeholder">
-                      <img src={logo} alt="logo" style={{width:"70px", borderRadius:"40%"}} />
+                      <img src={logo} alt="logo" style={{ width: "70px", borderRadius: "40%" }} />
                     </div>
                     <div className="ebms-company-info">
                       <h1 className="ebms-company-name">Nihal's Pictures</h1>
@@ -1007,6 +1028,15 @@ const downloadVoucherPDF = async () => {
                       <h3 className="ebms-section-title">INFORMATION DU CLIENT</h3>
                       <div className="ebms-client-details">
                         <p><strong>Nom:</strong> {selectedBooking.firstName} {selectedBooking.lastName}</p>
+
+                        {/* NEW: Add couple names to voucher */}
+                        {selectedBooking.husbandFirstName && (
+                          <p><strong>Marié:</strong> {selectedBooking.husbandFirstName}</p>
+                        )}
+                        {selectedBooking.wifeFirstName && (
+                          <p><strong>Mariée:</strong> {selectedBooking.wifeFirstName}</p>
+                        )}
+
                         <p><strong>Email:</strong> {selectedBooking.email}</p>
                         <p><strong>Téléphone:</strong> {selectedBooking.phoneNumbers?.[0]}</p>
                         {selectedBooking.phoneNumbers?.length > 1 && (
@@ -1272,6 +1302,25 @@ const downloadVoucherPDF = async () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* NEW: Show couple names in modal */}
+                  {(selectedBooking.husbandFirstName || selectedBooking.wifeFirstName) && (
+                    <div className="ebms-couple-details">
+                      {selectedBooking.husbandFirstName && (
+                        <div className="ebms-contact-row">
+                          <Users className="ebms-contact-icon" />
+                          <span className="ebms-contact-text">Marié: {selectedBooking.husbandFirstName}</span>
+                        </div>
+                      )}
+                      {selectedBooking.wifeFirstName && (
+                        <div className="ebms-contact-row">
+                          <Users className="ebms-contact-icon" />
+                          <span className="ebms-contact-text">Mariée: {selectedBooking.wifeFirstName}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="ebms-contact-row">
                     <Mail className="ebms-contact-icon" />
                     <span className="ebms-contact-text">{selectedBooking.email}</span>
@@ -1532,7 +1581,7 @@ const downloadVoucherPDF = async () => {
             font-size: 13px;
             margin-top: 2px;
           }
-        ` 
+        `
       }} />
     </div>
   );

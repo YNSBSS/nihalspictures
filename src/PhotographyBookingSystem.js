@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-
 import { collection, getDocs, addDoc, } from 'firebase/firestore';
-import { Camera, User, Phone, MessageSquare, Clock, MapPin, Plus, Minus, CheckCircle, Instagram, Facebook, Twitter, Heart, Users, Award, Sparkles, Zap } from 'lucide-react';
+import {
+  Camera, User, Phone, MessageSquare, Clock, MapPin, Plus, Minus,
+  CheckCircle, Instagram, Facebook, Twitter, Heart, Users, Award,
+  Sparkles, Zap, AlertCircle, X  // Add AlertCircle and X
+} from 'lucide-react';
 import nihalsvideo from './assets/nihalsvideo.mp4'; // Replace with your actual video file path
 import { db } from './firebaseConfig';
 import logo from './logo.jpg';
@@ -11,13 +14,157 @@ import ModernHeroSection from './ModernHeroSection';
 import nihalnobcg from './nihalnobcg.png';
 import useVisitorCounter from './useVisitorCounter';
 
+const Toast = ({ toast, onRemove }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
+  useEffect(() => {
+    const timer1 = setTimeout(() => setIsVisible(true), 10);
+    const timer2 = setTimeout(() => {
+      setIsLeaving(true);
+      setTimeout(() => onRemove(toast.id), 300);
+    }, toast.duration || 5000);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [toast.id, toast.duration, onRemove]);
+
+  const handleRemove = () => {
+    setIsLeaving(true);
+    setTimeout(() => onRemove(toast.id), 300);
+  };
+
+  const getToastStyle = () => {
+    return {
+      transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(100%) scale(0.8)',
+      opacity: isLeaving ? 0 : (isVisible ? 1 : 0),
+    };
+  };
+
+  const getIcon = () => {
+    const iconSize = 20;
+    
+    switch (toast.type) {
+      case 'success':
+        return <CheckCircle size={iconSize} className="toast-icon toast-icon-success" />;
+      case 'error':
+        return <AlertCircle size={iconSize} className="toast-icon toast-icon-error" />;
+      case 'warning':
+        return <AlertCircle size={iconSize} className="toast-icon toast-icon-warning" />;
+      case 'info':
+        return <Heart size={iconSize} className="toast-icon toast-icon-info" />;
+      default:
+        return <Sparkles size={iconSize} className="toast-icon toast-icon-info" />;
+    }
+  };
+
+  const getToastClass = () => {
+    const baseClass = 'toast';
+    const typeClass = `toast-${toast.type}`;
+    return `${baseClass} ${typeClass}`;
+  };
+
+  return (
+    <div 
+      className={getToastClass()}
+      style={getToastStyle()}
+    >
+      <div className="toast-content">
+        {getIcon()}
+        <div className="toast-text">
+          {toast.title && (
+            <div className="toast-title">
+              {toast.title}
+              {toast.type === 'success' && <Sparkles size={16} className="toast-sparkle" />}
+            </div>
+          )}
+          <div className="toast-message">
+            {toast.message}
+          </div>
+        </div>
+        <button
+          onClick={handleRemove}
+          className="toast-close"
+          aria-label="Fermer la notification"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Toast Container Component (no changes needed)
+const ToastContainer = ({ toasts, onRemoveToast }) => {
+  if (!toasts.length) return null;
+
+  return (
+    <div className="toast-container">
+      <div>
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            toast={toast}
+            onRemove={onRemoveToast}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Fixed useToast hook with proper character encoding:
+const useToast = () => {
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (message, type = 'info', title = null, duration = 5000) => {
+    const id = Date.now() + Math.random();
+    const toast = { id, message, type, title, duration };
+    
+    setToasts(prev => [...prev, toast]);
+    return id;
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  const showSuccess = (message, title = "Succès ✨") => {
+    return addToast(message, 'success', title);
+  };
+
+  const showError = (message, title = "Oups! 😔") => {
+    return addToast(message, 'error', title, 7000);
+  };
+
+  const showWarning = (message, title = "Attention ⚠️") => {
+    return addToast(message, 'warning', title);
+  };
+
+  const showInfo = (message, title = "Information 💝") => {
+    return addToast(message, 'info', title);
+  };
+
+  return {
+    toasts,
+    removeToast,
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo
+  };
+};
 
 const PhotographyBookingSystem = () => {
+  const { toasts, removeToast, showSuccess, showError } = useToast();
   const [servicePackages, setServicePackages] = useState([]);
   const [bookingForm, setBookingForm] = useState({
     firstName: '',
     lastName: '',
+    husbandFirstName: '',    // NEW FIELD
+    wifeFirstName: '',
     phoneNumbers: [''],
     wilaya: '',
     addressDetails: '',
@@ -154,8 +301,10 @@ const PhotographyBookingSystem = () => {
     const phoneValid = bookingForm.phoneNumbers[0].trim() !== '';
 
     if (!phoneValid || requiredFields.some(field => !bookingForm[field].trim())) {
-      alert('Veuillez remplir tous les champs obligatoires.');
-      return;
+      showError(
+        'Veuillez vérifier que tous les champs obligatoires sont bien remplis avant de continuer.',
+        'Champs manquants 📝'
+      ); return;
     }
 
     setSubmitting(true);
@@ -169,11 +318,15 @@ const PhotographyBookingSystem = () => {
       };
 
       await addDoc(collection(db, 'bookings'), bookingData);
-      alert('Demande de réservation soumise avec succès ! Nous vous contacterons dans les 24 heures pour confirmer votre séance.');
-
+      showSuccess(
+        'Nous vous contacterons dans les 24 heures pour confirmer tous les détails de votre séance photo. Merci pour votre confiance !',
+        'Demande envoyée avec succès ! 🎉'
+      );
       setBookingForm({
         firstName: '',
         lastName: '',
+        husbandFirstName: '',    // NEW FIELD
+        wifeFirstName: '',
         phoneNumbers: [''],
         wilaya: '',
         addressDetails: '',
@@ -188,7 +341,10 @@ const PhotographyBookingSystem = () => {
       });
     } catch (error) {
       console.error('Erreur lors de la soumission:', error);
-      alert('Erreur lors de la soumission de la réservation. Veuillez réessayer ou nous contacter directement.');
+      showError(
+        'Un problème technique est survenu. Veuillez réessayer dans quelques instants ou nous contacter directement par téléphone.',
+        'Erreur technique 😔'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -397,6 +553,40 @@ const PhotographyBookingSystem = () => {
                       disabled={submitting}
                       required
                       autoComplete="family-name"
+                    />
+                  </div>
+
+                  <div className="mnphoto-form-group">
+                    <label className="mnphoto-form-label">
+                      Prénom du marié <span style={{ color: '#64748b', fontWeight: '400' }}>(optionnel)</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="husbandFirstName"
+                      value={bookingForm.husbandFirstName}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
+                      className="mnphoto-form-input"
+                      placeholder="Prénom du marié"
+                      disabled={submitting}
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  <div className="mnphoto-form-group">
+                    <label className="mnphoto-form-label">
+                      Prénom de la mariée <span style={{ color: '#64748b', fontWeight: '400' }}>(optionnel)</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="wifeFirstName"
+                      value={bookingForm.wifeFirstName}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
+                      className="mnphoto-form-input"
+                      placeholder="Prénom de la mariée"
+                      disabled={submitting}
+                      autoComplete="off"
                     />
                   </div>
 
@@ -714,6 +904,8 @@ const PhotographyBookingSystem = () => {
           <p>&copy; 2025 Nihal's Pictures Photography. Tous droits réservés. | Designed with ❤️ for capturing memories</p>
         </div>
       </footer>
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+
     </div>
   );
 };
