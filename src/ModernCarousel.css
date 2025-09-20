@@ -742,10 +742,10 @@
   .carousel-container {
     height: 70vh;
     min-height: 500px;
-    width: 120%;
+    width: 100%;
     margin: 1rem;
     border-radius: 20px;
-    margin-left: -10%;
+    margin-left: -0%;
   }
 
   .carousel-nav {
