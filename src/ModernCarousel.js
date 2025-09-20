@@ -65,10 +65,10 @@ const ModernCarousel = () => {
 
   useEffect(() => {
     currentIndexRef.current = currentIndex;
-  });
+  }, [currentIndex]);
 
   useEffect(() => {
-    if (!isPlaying || images.length === 0) {
+    if (!isPlaying || images.length === 0 || showLightbox) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
@@ -87,10 +87,12 @@ const ModernCarousel = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isPlaying, images.length]);
+  }, [isPlaying, images.length, showLightbox]);
 
   // Video management with performance optimization
   useEffect(() => {
+    if (showLightbox) return; // Don't manage carousel videos when lightbox is open
+    
     videoRefsMap.current.forEach((videoElement, mediaId) => {
       if (videoElement) {
         const mediaIndex = images.findIndex(img => img.id === mediaId);
@@ -104,7 +106,7 @@ const ModernCarousel = () => {
         }
       }
     });
-  }, [currentIndex, images]);
+  }, [currentIndex, images, showLightbox]);
 
   // Cleanup
   useEffect(() => {
@@ -116,6 +118,10 @@ const ModernCarousel = () => {
           video.pause();
         }
       });
+      // Clear any remaining intervals
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
   }, []);
 
@@ -140,20 +146,34 @@ const ModernCarousel = () => {
     goToSlide(newIndex);
   }, [currentIndex, images.length, isTransitioning, goToSlide]);
 
-  const openLightbox = (index) => {
+  const openLightbox = useCallback((index) => {
+    if (typeof index !== 'number' || index < 0 || index >= images.length) {
+      console.error('Invalid lightbox index:', index);
+      return;
+    }
+    
     setLightboxIndex(index);
     setShowLightbox(true);
     setIsPlaying(false);
+    
     // Prevent body scroll when lightbox is open
-    document.body.style.overflow = 'hidden';
-  };
+  }, [images.length]);
 
-  const closeLightbox = () => {
+  const closeLightbox = useCallback(() => {
     setShowLightbox(false);
     setIsPlaying(true);
+    
     // Restore body scroll
     document.body.style.overflow = 'unset';
-  };
+  }, []);
+
+  const lightboxPrevious = useCallback(() => {
+    setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+  }, [images.length]);
+
+  const lightboxNext = useCallback(() => {
+    setLightboxIndex((prev) => (prev + 1) % images.length);
+  }, [images.length]);
 
   const openInstagram = (url) => {
     if (url) {
@@ -248,12 +268,15 @@ const ModernCarousel = () => {
       if (showLightbox) {
         switch (e.key) {
           case 'ArrowLeft':
-            setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+            e.preventDefault();
+            lightboxPrevious();
             break;
           case 'ArrowRight':
-            setLightboxIndex((prev) => (prev + 1) % images.length);
+            e.preventDefault();
+            lightboxNext();
             break;
           case 'Escape':
+            e.preventDefault();
             closeLightbox();
             break;
           default:
@@ -264,9 +287,11 @@ const ModernCarousel = () => {
       
       switch (e.key) {
         case 'ArrowLeft':
+          e.preventDefault();
           goToPrevious();
           break;
         case 'ArrowRight':
+          e.preventDefault();
           goToNext();
           break;
         case ' ':
@@ -274,6 +299,7 @@ const ModernCarousel = () => {
           setIsPlaying(!isPlaying);
           break;
         case 'Escape':
+          e.preventDefault();
           if (showLightbox) closeLightbox();
           break;
         default:
@@ -283,49 +309,58 @@ const ModernCarousel = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [goToPrevious, goToNext, isPlaying, showLightbox, images.length]);
+  }, [goToPrevious, goToNext, isPlaying, showLightbox, closeLightbox, lightboxPrevious, lightboxNext]);
 
   // Render media content
-  const renderMedia = (media, isCenter = false, isLightbox = false) => {
-    const className = isLightbox ? 'lightbox-image' : 'slide-image';
-    
-    if (media.type === 'video') {
-      return (
-        <video
-          ref={!isLightbox ? (el) => setVideoRef(el, media.id) : null}
-          src={media.url}
-          className={className}
-          controls={isCenter || isLightbox}
-          muted={!isLightbox}
-          loop
-          autoPlay={!isLightbox}
-          playsInline
-          preload={isCenter ? 'auto' : 'metadata'}
-          onLoadedData={(e) => {
-            if (!isLightbox && isCenter) {
-              e.target.play().catch(console.error);
-            }
-          }}
-          onError={(e) => {
-            console.error('Video loading error:', e);
-          }}
-        />
-      );
-    } else {
-      return (
-        <img
-          src={media.url}
-          alt={media.title || `Média ${media.id}`}
-          className={className}
-          loading={isCenter ? 'eager' : 'lazy'}
-          onError={(e) => {
-            console.error('Image loading error:', e);
-            e.target.style.display = 'none';
-          }}
-        />
-      );
-    }
-  };
+ const renderMedia = (media, isCenter = false, isLightbox = false) => {
+  if (!media || !media.url) {
+    return <div className="media-error">Media not found</div>;
+  }
+
+  const className = isLightbox ? 'lightbox-image' : 'slide-image';
+  const keyPrefix = isLightbox ? 'lightbox' : 'carousel';
+  
+  if (media.type === 'video') {
+    return (
+      <video
+        key={`video-${media.id}-${keyPrefix}`}
+        ref={!isLightbox ? (el) => setVideoRef(el, media.id) : null}
+        src={media.url}
+        className={className}
+        controls={isCenter || isLightbox}
+        muted={!isLightbox}
+        loop
+        autoPlay={false}
+        playsInline
+        preload={isCenter || isLightbox ? 'auto' : 'metadata'}
+        style={isLightbox ? { maxWidth: '90vw', maxHeight: '70vh' } : {}}
+        onLoadedData={(e) => {
+          if (!isLightbox && isCenter) {
+            e.target.play().catch(console.error);
+          }
+        }}
+        onError={(e) => {
+          console.error('Video loading error:', e);
+        }}
+      />
+    );
+  } else {
+    return (
+      <img
+        key={`img-${media.id}-${keyPrefix}`}
+        src={media.url}
+        alt={media.title || `Media ${media.id}`}
+        className={className}
+        loading={isCenter || isLightbox ? 'eager' : 'lazy'}
+        style={isLightbox ? { maxWidth: '90vw', maxHeight: '70vh' } : {}}
+        onError={(e) => {
+          console.error('Image loading error:', e);
+          e.target.style.display = 'none';
+        }}
+      />
+    );
+  }
+};
 
   // Loading state
   if (loading) {
@@ -377,6 +412,10 @@ const ModernCarousel = () => {
   };
 
   const progressPercentage = images.length > 0 ? ((currentIndex + 1) / images.length) * 100 : 0;
+
+  // Ensure lightboxIndex is valid
+  const validLightboxIndex = Math.max(0, Math.min(lightboxIndex, images.length - 1));
+  const currentLightboxMedia = images[validLightboxIndex];
 
   return (
     <>
@@ -573,106 +612,78 @@ const ModernCarousel = () => {
         </div>
       </div>
 
-
-{showLightbox && (
-  <div className="lightbox-overlay" onClick={closeLightbox}>
-    <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
-      
-      {/* Fixed Close Button */}
-      <button
-        className="lightbox-close"
-        onClick={closeLightbox}
-        title="Fermer"
-      >
-        <X size={20} />
-      </button>
-
-      {/* Main Content Area */}
-      <div className="lightbox-content">
-        <button
-          className="lightbox-nav lightbox-nav-left"
-          onClick={() => setLightboxIndex((prev) => (prev - 1 + images.length) % images.length)}
-          title="Média précédent"
-        >
-          <ChevronLeft size={24} />
-        </button>
-
-        <div className="lightbox-image-wrapper">
-          {renderMedia(images[lightboxIndex], false, true)}
-        </div>
-
-        <button
-          className="lightbox-nav lightbox-nav-right"
-          onClick={() => setLightboxIndex((prev) => (prev + 1) % images.length)}
-          title="Média suivant"
-        >
-          <ChevronRight size={24} />
-        </button>
-      </div>
-
-      {/* Fixed Info Panel */}
-      {(images[lightboxIndex]?.title || images[lightboxIndex]?.description || images[lightboxIndex]?.instagramUrl) && (
-        <div className="lightbox-info">
-          <div className="info-content">
-            {images[lightboxIndex]?.title && (
-              <h3>{images[lightboxIndex].title}</h3>
-            )}
-            {images[lightboxIndex]?.description && (
-              <p>{images[lightboxIndex].description}</p>
-            )}
-          </div>
-          
-          <div className="info-actions">
-            {images[lightboxIndex]?.instagramUrl && (
-              <button
-                className="lightbox-instagram"
-                onClick={() => openInstagram(images[lightboxIndex].instagramUrl)}
-              >
-                <Instagram size={16} />
-                Instagram
-              </button>
-            )}
+      {/* Fixed Lightbox */}
+      {showLightbox && currentLightboxMedia && (
+        <div className="lightbox-overlay" onClick={closeLightbox}>
+          <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
             
+            {/* Fixed Close Button */}
             <button
-              className="lightbox-share"
-              onClick={() => shareImage(images[lightboxIndex])}
+              className="lightbox-close"
+              onClick={closeLightbox}
+              title="Fermer"
             >
-              <Share2 size={16} />
-              Partager
+              <X size={20} />
             </button>
+
+            {/* Navigation buttons */}
+            <button
+              className="lightbox-nav lightbox-nav-left"
+              onClick={lightboxPrevious}
+              title="Média précédent"
+            >
+              <ChevronLeft size={24} />
+            </button>
+
+            <button
+              className="lightbox-nav lightbox-nav-right"
+              onClick={lightboxNext}
+              title="Média suivant"
+            >
+              <ChevronRight size={24} />
+            </button>
+
+            {/* Main image/video container */}
+            <div className="lightbox-image-wrapper">
+              {renderMedia(currentLightboxMedia, false, true)}
+            </div>
+
+            {/* Fixed Info Panel */}
+            {(currentLightboxMedia.title || currentLightboxMedia.description || currentLightboxMedia.instagramUrl) && (
+              <div className="lightbox-info">
+                <div className="info-content">
+                  {currentLightboxMedia.title && (
+                    <h3>{currentLightboxMedia.title}</h3>
+                  )}
+                  {currentLightboxMedia.description && (
+                    <p>{currentLightboxMedia.description}</p>
+                  )}
+                </div>
+                
+                <div className="info-actions">
+                  {currentLightboxMedia.instagramUrl && (
+                    <button
+                      className="lightbox-instagram"
+                      onClick={() => openInstagram(currentLightboxMedia.instagramUrl)}
+                    >
+                      <Instagram size={16} />
+                      Instagram
+                    </button>
+                  )}
+                  
+                  <button
+                    className="lightbox-share"
+                    onClick={() => shareImage(currentLightboxMedia)}
+                  >
+                    <Share2 size={16} />
+                    Partager
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
-
-      {/* Fixed Thumbnails 
-      <div className="lightbox-thumbnails">
-        {images.map((media, index) => (
-          <button
-            key={media.id}
-            className={`lightbox-thumbnail ${index === lightboxIndex ? 'active' : ''}`}
-            onClick={() => setLightboxIndex(index)}
-            title={media.title || `Média ${index + 1}`}
-          >
-            {media.type === 'video' ? (
-              <video 
-                src={media.url} 
-                muted 
-                preload="metadata"
-              />
-            ) : (
-              <img 
-                src={media.url} 
-                alt={`Miniature ${index + 1}`}
-                loading="lazy"
-              />
-            )}
-          </button>
-        ))}
-      </div>
-      */}
-    </div>
-  </div>
-)}
     </>
   );
 };

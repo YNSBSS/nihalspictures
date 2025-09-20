@@ -111,7 +111,7 @@ const PackageCards = ({ servicePackages, onSelectPackage, logo }) => {
         </div>
       </div>
       <div className="mnphoto-service-content">
-        <h3 className="mnphoto-service-name">{pkg.category}-{pkg.name}</h3>
+        <h3 className="mnphoto-service-name">{pkg.category} - {pkg.name}</h3>
         <div className="mnphoto-service-duration">
           <Clock className="mnphoto-duration-icon" />
           <span>{pkg.duration}</span>

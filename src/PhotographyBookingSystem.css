@@ -19,7 +19,7 @@
 
 /* Section Containers */
 .mnphoto-section-container {
-  max-width: 1200px;
+  max-width: 80vw;
   margin: 0 auto;
   padding: 4rem 2rem;
   position: relative;
@@ -77,7 +77,6 @@
   transition: all 0.4s ease;
   position: relative;
   box-shadow: 0 8px 32px rgba(124, 111, 101, 0.08);
-  max-width: 40vw;
 }
 
 .mnphoto-service-card::before {
@@ -251,7 +250,7 @@
 }
 
 .mnphoto-booking-form-card {
-  max-width: 90%;
+  width: 90%;
   margin: 0 auto;
   background: #eee9e2;
   backdrop-filter: blur(25px);
@@ -259,8 +258,6 @@
   border: 2px solid rgba(227, 178, 60, 0.2);
   overflow: hidden;
   position: relative;
-
-  /* Layered shadows for depth */
   box-shadow:
     0 25px 50px rgba(124, 111, 101, 0.35),   /* main deep shadow */
     0 10px 20px rgba(124, 111, 101, 0.25),   /* softer mid-layer */
@@ -635,13 +632,28 @@
   margin-top: 2rem;
   color: #9A9B73;
 }
-
+@media (min-width: 768px) {
+  .mnphoto-service-card {
+  background: #FBF9F6;
+  border-radius: 20px;
+  border: 2px solid #F5EBDD;
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  transition: all 0.4s ease;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(124, 111, 101, 0.08);
+  max-width: 40vw;
+}
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .mnphoto-section-container {
     padding: 3rem 1.5rem;
   }
-  
+  .mnphoto-booking-form-card {
+    width: 120%;
+    margin-left: -10%;
+  }
   .mnphoto-services-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
