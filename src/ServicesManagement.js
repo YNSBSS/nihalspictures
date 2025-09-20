@@ -582,15 +582,20 @@ const ServicesManagement = () => {
                 <div className="sm-form-row">
                   <div className="sm-form-group">
                     <label className="sm-form-label">Category</label>
-                    <input
-                      type="text"
+                    <select
                       name="category"
                       value={serviceForm.category}
                       onChange={handleInputChange}
-                      placeholder="e.g., Wedding Photography"
                       className="sm-form-input"
                       disabled={submitting}
-                    />
+                    >
+                      <option value="">Select a category</option>
+                      <option value="mariage">Mariage</option>
+                      <option value="fiançaille">Fiançaille</option>
+                      <option value="soutenance">Soutenance</option>
+                      <option value="evenement">Événement</option>
+                      <option value="autres">Autres</option>
+                    </select>
                   </div>
 
                   <div className="sm-form-checkbox-wrapper">

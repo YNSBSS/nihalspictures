@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, } from 'firebase/firestore';
 import {
-  Camera, User, Phone, MessageSquare, Clock, MapPin, Plus, Minus,
+  Camera, User, Phone, MessageSquare, MapPin, Plus, Minus,
   CheckCircle, Instagram, Facebook, Twitter, Heart, Users, Award,
   Sparkles, Zap, AlertCircle, X  // Add AlertCircle and X
 } from 'lucide-react';
@@ -13,6 +13,7 @@ import './PhotographyBookingSystem.css';
 import ModernHeroSection from './ModernHeroSection';
 import nihalnobcg from './nihalnobcg.png';
 import useVisitorCounter from './useVisitorCounter';
+import PackageCards from './PackageCards';
 
 const Toast = ({ toast, onRemove }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -45,7 +46,7 @@ const Toast = ({ toast, onRemove }) => {
 
   const getIcon = () => {
     const iconSize = 20;
-    
+
     switch (toast.type) {
       case 'success':
         return <CheckCircle size={iconSize} className="toast-icon toast-icon-success" />;
@@ -67,7 +68,7 @@ const Toast = ({ toast, onRemove }) => {
   };
 
   return (
-    <div 
+    <div
       className={getToastClass()}
       style={getToastStyle()}
     >
@@ -122,7 +123,7 @@ const useToast = () => {
   const addToast = (message, type = 'info', title = null, duration = 5000) => {
     const id = Date.now() + Math.random();
     const toast = { id, message, type, title, duration };
-    
+
     setToasts(prev => [...prev, toast]);
     return id;
   };
@@ -175,6 +176,8 @@ const PhotographyBookingSystem = () => {
     remarks: '',
     cortege: '',
     salleName: '',
+    supplements: [], // NEW FIELD
+    supplementsTotal: 0, // NEW FIELD
     status: 'Requested'
   });
   const [submitting, setSubmitting] = useState(false);
@@ -196,7 +199,17 @@ const PhotographyBookingSystem = () => {
     'BLIDA',
     'TIZI OUZOU'
   ];
-
+  // Supplement options with prices
+  const supplementOptions = [
+    { id: 'cortege', name: 'Cortège', price: 5000 },
+    { id: 'coiffeuse_cortege', name: 'Coiffeuse + Cortège', price: 7000 },
+    { id: 'drone', name: 'Drone', price: 15000 },
+    { id: 'shooting_hotel', name: 'Shooting à l\'hôtel', price: 8000 },
+    { id: 'double_cle_usb', name: 'Double clé USB', price: 1500 },
+    { id: 'equipe_homme', name: 'Équipe homme', price: 25000 },
+    { id: 'service_pochette', name: 'Service pas de photos (pochette)', price: 15000 },
+    { id: 'fumee_lourde', name: 'La fumée lourde', price: 30000 }
+  ];
   // Load service packages from Firestore
   useEffect(() => {
     const loadServicePackages = async () => {
@@ -207,31 +220,12 @@ const PhotographyBookingSystem = () => {
           id: doc.id,
           ...doc.data()
         }));
-        setServicePackages(packages.length > 0 ? packages : fallbackPackages);
+        setServicePackages(packages.length > 0 ? packages : "");
       } catch (error) {
         console.error('Erreur lors du chargement des packs:', error);
-        setServicePackages(fallbackPackages);
       }
     };
 
-    const fallbackPackages = [
-      {
-        id: 'portrait',
-        name: 'Séance Portrait',
-        duration: '1-2 heures',
-        price: 15000,
-        description: 'Séance photo portrait professionnelle en studio ou extérieur',
-        image: logo
-      },
-      {
-        id: 'wedding',
-        name: 'Photographie de Mariage',
-        duration: '6-8 heures',
-        price: 80000,
-        description: 'Couverture complète de votre journée de mariage',
-        image: logo
-      },
-    ];
 
     loadServicePackages();
   }, []);
@@ -265,7 +259,36 @@ const PhotographyBookingSystem = () => {
       phoneNumbers: newPhoneNumbers
     }));
   };
+  const handleSupplementChange = (supplementId, isChecked) => {
+    const supplement = supplementOptions.find(s => s.id === supplementId);
 
+    setBookingForm(prev => {
+      let newSupplements = [...prev.supplements];
+      let newTotal = prev.supplementsTotal;
+
+      if (isChecked) {
+        newSupplements.push({
+          id: supplementId,
+          name: supplement.name,
+          price: supplement.price
+        });
+        newTotal += supplement.price;
+      } else {
+        newSupplements = newSupplements.filter(s => s.id !== supplementId);
+        newTotal -= supplement.price;
+      }
+
+      return {
+        ...prev,
+        supplements: newSupplements,
+        supplementsTotal: newTotal
+      };
+    });
+  };
+
+  const isSupplementSelected = (supplementId) => {
+    return bookingForm.supplements.some(s => s.id === supplementId);
+  };
   // Enhanced keyboard event handler to ensure spaces work
   const handleKeyDown = (e) => {
     // Explicitly allow space key and prevent any interference
@@ -337,6 +360,8 @@ const PhotographyBookingSystem = () => {
         remarks: '',
         cortege: '',
         salleName: '',
+        supplements: [], // NEW FIELD
+        supplementsTotal: 0, // NEW FIELD
         status: 'Requested'
       });
     } catch (error) {
@@ -451,58 +476,11 @@ const PhotographyBookingSystem = () => {
       <section className="mnphoto-services-section">
         <div className="mnphoto-section-container">
           <h2 className="mnphoto-section-title">Nos Packs</h2>
-          <div className="mnphoto-services-grid">
-            {servicePackages.filter(pkg => pkg.isActive !== false).map(pkg => (
-              <div key={pkg.id} className="mnphoto-service-card">
-                <div className="mnphoto-service-image">
-                  <img
-                    src={pkg.imageUrl || logo}
-                    alt={pkg.name}
-                    className="mnphoto-service-img"
-                  />
-                  <div className="mnphoto-service-overlay">
-                    <div className="mnphoto-service-price">
-                      {pkg.price?.toLocaleString()} DZD
-                    </div>
-                    {pkg.serviceNumber && (
-                      <div className="mnphoto-service-number">
-                        #{pkg.serviceNumber}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="mnphoto-service-content">
-                  <h3 className="mnphoto-service-name">{pkg.name}</h3>
-                  <div className="mnphoto-service-duration">
-                    <Clock className="mnphoto-duration-icon" />
-                    <span>{pkg.duration}</span>
-                  </div>
-                  <p className="mnphoto-service-description">{pkg.description}</p>
-
-                  {pkg.features && pkg.features.length > 0 && (
-                    <div className="mnphoto-service-features">
-                      <h4>Inclus dans ce pack :</h4>
-                      <ul className="mnphoto-features-list">
-                        {pkg.features.map((feature, index) => (
-                          <li key={index} className="mnphoto-feature-item">
-                            <CheckCircle className="mnphoto-feature-icon" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <button
-                    className="mnphoto-service-select-btn"
-                    onClick={() => setBookingForm(prev => ({ ...prev, packName: pkg.name }))}
-                  >
-                    Choisir ce pack
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <PackageCards
+            servicePackages={servicePackages}
+            onSelectPackage={(packName) => setBookingForm(prev => ({ ...prev, packName }))}
+            logo={logo}
+          />
         </div>
       </section>
 
@@ -727,7 +705,7 @@ const PhotographyBookingSystem = () => {
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
                       className="mnphoto-form-input"
-                      placeholder="Nom du pack"
+                      placeholder="Numero du pack"
                       disabled={submitting}
                       required
                     />
@@ -807,7 +785,38 @@ const PhotographyBookingSystem = () => {
                     />
                   </div>
                 </div>
+                {/* Supplements Section */}
+                <div className="mnphoto-form-section">
+                  <h3 className="mnphoto-form-section-title">
+                    <Plus className="mnphoto-section-icon" />
+                    Suppléments (Optionnel)
+                  </h3>
 
+                  <div className="mnphoto-supplements-grid">
+                    {supplementOptions.map(supplement => (
+                      <label key={supplement.id} className="mnphoto-supplement-option">
+                        <input
+                          type="checkbox"
+                          checked={isSupplementSelected(supplement.id)}
+                          onChange={(e) => handleSupplementChange(supplement.id, e.target.checked)}
+                          className="mnphoto-supplement-checkbox"
+                          disabled={submitting}
+                        />
+                        <span className="mnphoto-supplement-custom-checkbox"></span>
+                        <div className="mnphoto-supplement-info">
+                          <div className="mnphoto-supplement-name">{supplement.name}</div>
+                          <div className="mnphoto-supplement-price">{supplement.price.toLocaleString()} DZD</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+
+                  {bookingForm.supplements.length > 0 && (
+                    <div className="mnphoto-supplements-total">
+                      <strong>Total suppléments: {bookingForm.supplementsTotal.toLocaleString()} DZD</strong>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Form Actions */}
@@ -828,6 +837,8 @@ const PhotographyBookingSystem = () => {
                   <strong>Note importante :</strong> Il s'agit d'une demande de réservation.
                   Nous vous contacterons dans les 24 heures pour confirmer la disponibilité
                   et finaliser tous les détails de votre séance photo.
+                  <br /><br />
+                  <strong>Important :</strong> Les frais de transport ne sont pas inclus dans les prix affichés.
                 </div>
 
                 <div className="mnphoto-alternative-contact">

@@ -119,8 +119,11 @@ const BookingsManagement = () => {
         booking.addressDetails?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.salleName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.husbandFirstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||    // NEW
-        booking.wifeFirstName?.toLowerCase().includes(searchTerm.toLowerCase())
+        booking.husbandFirstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.wifeFirstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.supplements?.some(supplement =>
+          supplement.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
       );
     }
 
@@ -289,21 +292,23 @@ const BookingsManagement = () => {
     const csvContent = [
       [
         'Date', 'Time', 'Client Name', 'Husband First Name', 'Wife First Name', 'Email', 'Phone Numbers', 'Wilaya', 'Address Details',
-        'Venue/Salle', 'Service', 'Cortege', 'Status', 'Total Price', 'Paid Amount',
+        'Venue/Salle', 'Service', 'Supplements', 'Supplements Total', 'Cortege', 'Status', 'Total Price', 'Paid Amount',
         'Remaining', 'Payment Status', 'Remarks', 'Created At'
       ].join(','),
       ...filteredBookings.map(booking => [
         booking.date,
         booking.time,
         `${booking.firstName} ${booking.lastName}`,
-        booking.husbandFirstName || '',     // NEW
-        booking.wifeFirstName || '',        // NEW
+        booking.husbandFirstName || '',
+        booking.wifeFirstName || '',
         booking.email,
         booking.phoneNumbers?.join(' | ') || '',
         booking.wilaya || '',
         booking.addressDetails || '',
         booking.salleName || '',
         booking.packName,
+        booking.supplements?.map(s => s.name).join(' | ') || '',
+        booking.supplementsTotal || 0,
         booking.cortege || '',
         booking.status,
         booking.totalPrice || 0,
@@ -734,6 +739,7 @@ const BookingsManagement = () => {
                 <th className="ebms-table-th">Client</th>
                 <th className="ebms-table-th">Location</th>
                 <th className="ebms-table-th">Service Details</th>
+                <th className="ebms-table-th">Supplements</th>
                 <th className="ebms-table-th">Date & Time</th>
                 <th className="ebms-table-th">Status</th>
                 <th className="ebms-table-th">Pricing</th>
@@ -809,6 +815,34 @@ const BookingsManagement = () => {
                             <MessageSquare className="ebms-remarks-icon" size={12} />
                             Notes available
                           </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="ebms-table-cell">
+                      <div className="ebms-supplements-info">
+                        {booking.supplements && booking.supplements.length > 0 ? (
+                          <>
+                            <div className="ebms-supplements-count">
+                              {booking.supplements.length} supplément{booking.supplements.length > 1 ? 's' : ''}
+                            </div>
+                            <div className="ebms-supplements-total">
+                              Total: {booking.supplementsTotal?.toLocaleString() || '0'} DZD
+                            </div>
+                            <div className="ebms-supplements-preview" title={booking.supplements.map(s => s.name).join(', ')}>
+                              {booking.supplements.slice(0, 2).map(supplement => (
+                                <div key={supplement.id} className="ebms-supplement-tag">
+                                  {supplement.name}
+                                </div>
+                              ))}
+                              {booking.supplements.length > 2 && (
+                                <div className="ebms-supplement-more">
+                                  +{booking.supplements.length - 2} more
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="ebms-no-supplements">Aucun supplément</div>
                         )}
                       </div>
                     </td>
@@ -1072,6 +1106,18 @@ const BookingsManagement = () => {
                         )}
                       </div>
                     </div>
+                    {/* Add this after service details in voucher */}
+                    {selectedBooking.supplements && selectedBooking.supplements.length > 0 && (
+                      <>
+                        <p><strong>Suppléments:</strong></p>
+                        {selectedBooking.supplements.map(supplement => (
+                          <p key={supplement.id} style={{ marginLeft: '15px', fontSize: '14px' }}>
+                            • {supplement.name}: {supplement.price?.toLocaleString()} DZD
+                          </p>
+                        ))}
+                        <p><strong>Total Suppléments:</strong> {selectedBooking.supplementsTotal?.toLocaleString()} DZD</p>
+                      </>
+                    )}
                   </div>
 
                   <div className="ebms-voucher-right-column">
@@ -1380,6 +1426,28 @@ const BookingsManagement = () => {
                     </span>
                   </div>
                 </div>
+                {/* Supplements Section */}
+                {selectedBooking.supplements && selectedBooking.supplements.length > 0 && (
+                  <div className="ebms-supplements-section">
+                    <h3 className="ebms-section-title">Suppléments Sélectionnés</h3>
+                    <div className="ebms-supplements-list">
+                      {selectedBooking.supplements.map((supplement) => (
+                        <div key={supplement.id} className="ebms-supplement-item">
+                          <span className="ebms-supplement-name">{supplement.name}</span>
+                          <span className="ebms-supplement-price">
+                            {supplement.price?.toLocaleString()} DZD
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="ebms-supplements-total-row">
+                      <span className="ebms-supplements-total-label">Total Suppléments:</span>
+                      <span className="ebms-supplements-total-value">
+                        {selectedBooking.supplementsTotal?.toLocaleString()} DZD
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Pricing Section */}

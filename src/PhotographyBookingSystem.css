@@ -77,6 +77,7 @@
   transition: all 0.4s ease;
   position: relative;
   box-shadow: 0 8px 32px rgba(124, 111, 101, 0.08);
+  max-width: 40vw;
 }
 
 .mnphoto-service-card::before {
@@ -1111,4 +1112,196 @@
   .toast-message {
     font-size: 12px;
   }
+}/* Supplements Section Styling */
+.mnphoto-supplements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Individual Supplement Option */
+.mnphoto-supplement-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 70px;
+}
+
+.mnphoto-supplement-option:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mnphoto-supplement-option:has(.mnphoto-supplement-checkbox:checked) {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+}
+
+/* Hidden Default Checkbox */
+.mnphoto-supplement-checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Custom Checkbox */
+.mnphoto-supplement-custom-checkbox {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  background: white;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.mnphoto-supplement-custom-checkbox::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.mnphoto-supplement-checkbox:checked + .mnphoto-supplement-custom-checkbox {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.mnphoto-supplement-checkbox:checked + .mnphoto-supplement-custom-checkbox::after {
+  opacity: 1;
+}
+
+/* Supplement Information */
+.mnphoto-supplement-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mnphoto-supplement-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.mnphoto-supplement-price {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 2px 8px;
+  border-radius: 20px;
+  display: inline-block;
+  width: fit-content;
+}
+
+/* Supplements Total */
+.mnphoto-supplements-total {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  text-align: center;
+  color: #065f46;
+  font-size: 1.1rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .mnphoto-supplements-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .mnphoto-supplement-option {
+    padding: 0.875rem;
+    min-height: 60px;
+  }
+  
+  .mnphoto-supplement-name {
+    font-size: 0.9rem;
+  }
+  
+  .mnphoto-supplement-price {
+    font-size: 0.8rem;
+  }
+  
+  .mnphoto-supplements-total {
+    font-size: 1rem;
+    padding: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mnphoto-supplements-grid {
+    gap: 0.5rem;
+  }
+  
+  .mnphoto-supplement-option {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  .mnphoto-supplement-custom-checkbox {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .mnphoto-supplement-custom-checkbox::after {
+    top: 1px;
+    left: 5px;
+    width: 5px;
+    height: 8px;
+  }
+}
+
+/* Animation for checked state */
+@keyframes checkboxPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.mnphoto-supplement-checkbox:checked + .mnphoto-supplement-custom-checkbox {
+  animation: checkboxPulse 0.3s ease;
+}
+
+/* Focus states for accessibility */
+.mnphoto-supplement-option:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.mnphoto-supplement-checkbox:focus + .mnphoto-supplement-custom-checkbox {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
