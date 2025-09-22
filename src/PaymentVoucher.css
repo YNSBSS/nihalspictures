@@ -1,0 +1,641 @@
+/* PaymentVoucher.css */
+
+/* Modal Base Styles */
+.voucher-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.voucher-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 95vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.voucher-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px 16px 0 0;
+}
+
+.voucher-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.voucher-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.voucher-print-btn, 
+.voucher-pdf-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.voucher-print-btn:hover, 
+.voucher-pdf-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.voucher-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.voucher-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.voucher-close-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.voucher-btn-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.voucher-modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Voucher Container Styles */
+.voucher-container {
+  background: white;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 25px;
+  font-family: 'Arial', sans-serif;
+  color: #1a202c;
+  line-height: 1.4;
+  font-size: 11px;
+}
+
+.voucher-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.voucher-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.company-info h1 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1a202c;
+  margin: 0;
+}
+
+.company-tagline {
+  color: #64748b;
+  font-size: 11px;
+  margin: 2px 0 0 0;
+}
+
+.voucher-number {
+  text-align: right;
+}
+
+.voucher-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #1a202c;
+  margin: 0 0 6px 0;
+}
+
+.voucher-id {
+  font-size: 13px;
+  color: #3b82f6;
+  font-weight: 600;
+  margin: 0;
+}
+
+.voucher-date {
+  color: #64748b;
+  font-size: 11px;
+  margin: 3px 0 0 0;
+}
+
+/* Two-column layout for voucher content - ALWAYS maintain this for consistency */
+.voucher-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.voucher-left-column,
+.voucher-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Compact voucher sections for two-column layout */
+.voucher-client,
+.voucher-service,
+.voucher-pricing,
+.voucher-payments {
+  margin-bottom: 0;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #1a202c;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.client-details,
+.service-details {
+  display: grid;
+  gap: 5px;
+}
+
+.client-details p,
+.service-details p {
+  margin: 0;
+  color: #374151;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.client-details strong,
+.service-details strong {
+  color: #1a202c;
+  display: inline-block;
+  min-width: 60px;
+  font-size: 10px;
+}
+
+/* Compact supplements section */
+.supplements-section {
+  margin: 8px 0;
+  padding: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.supplements-list {
+  font-size: 9px;
+  color: #4b5563;
+  margin-left: 10px;
+}
+
+.supplement-item {
+  margin: 2px 0;
+}
+
+.supplements-total {
+  font-weight: 600;
+  font-size: 10px;
+  margin-top: 5px;
+  color: #1a202c;
+}
+
+/* Pricing Table */
+.pricing-table {
+  display: grid;
+  gap: 8px;
+}
+
+.pricing-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 10px;
+}
+
+.pricing-row:last-child {
+  border-bottom: none;
+}
+
+.remaining-row {
+  background: #fee2e2;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #fecaca;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.price-value {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.price-value.paid {
+  color: #059669;
+}
+
+.price-value.remaining {
+  color: #dc2626;
+}
+
+/* Compact payment table */
+.payments-table-compact {
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.payment-row-compact {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  background: white;
+}
+
+.payment-row-compact:last-child {
+  border-bottom: none;
+}
+
+.payment-info-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  gap: 6px;
+}
+
+.payment-amount-compact {
+  font-weight: 600;
+  color: #059669;
+  font-size: 10px;
+}
+
+.payment-method-compact {
+  color: #64748b;
+  font-size: 9px;
+  text-transform: capitalize;
+}
+
+.payment-date-compact {
+  color: #64748b;
+  font-size: 9px;
+}
+
+.no-payments-compact {
+  padding: 15px;
+  text-align: center;
+  color: #64748b;
+  font-style: italic;
+  background: white;
+  font-size: 10px;
+}
+
+.more-payments {
+  padding: 6px 12px;
+  text-align: center;
+  color: #64748b;
+  font-size: 9px;
+  font-style: italic;
+  background: #f8fafc;
+}
+
+/* Voucher Footer */
+.voucher-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.footer-contact h4 {
+  font-size: 11px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  color: #1a202c;
+}
+
+.footer-contact p {
+  margin: 2px 0;
+  font-size: 10px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-signature {
+  text-align: center;
+}
+
+.signature-line {
+  border-top: 1px solid #1a202c;
+  width: 150px;
+  padding-top: 6px;
+  font-size: 10px;
+  color: #64748b;
+}
+
+.voucher-terms {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.voucher-terms p {
+  margin: 0;
+  color: #64748b;
+  font-size: 9px;
+}
+
+/* Exit button section */
+.voucher-exit-section {
+  padding: 15px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.voucher-exit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.voucher-exit-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* Mobile-specific optimizations - ONLY for display, NOT for PDF generation */
+@media screen and (max-width: 768px) {
+  .voucher-modal {
+    max-width: 95vw;
+    margin: 10px;
+  }
+  
+  .voucher-container {
+    padding: 20px;
+    font-size: 10px;
+    max-width: 90%;
+  }
+  
+  /* Keep 2-column layout on mobile for consistency with PDF */
+  .voucher-content-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+  .voucher-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .voucher-number {
+    text-align: center;
+  }
+  
+  .voucher-logo {
+    justify-content: center;
+  }
+  
+  .company-info h1 {
+    font-size: 16px;
+  }
+  
+  .voucher-title {
+    font-size: 14px;
+  }
+  
+  .section-title {
+    font-size: 11px;
+  }
+  
+  .client-details p,
+  .service-details p {
+    font-size: 9px;
+  }
+  
+  .voucher-client,
+  .voucher-service,
+  .voucher-pricing,
+  .voucher-payments {
+    padding: 12px;
+  }
+  
+  .voucher-footer {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .footer-contact {
+    text-align: center;
+  }
+}
+
+/* For very small screens, allow single column BUT maintain PDF consistency */
+@media screen and (max-width: 480px) {
+  .voucher-content-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .voucher-container {
+    font-size: 9px;
+  }
+  
+  .section-title {
+    font-size: 10px;
+  }
+  
+  .client-details p,
+  .service-details p {
+    font-size: 8px;
+  }
+}
+
+/* Print styles - ensure one page and maintain layout */
+@media print {
+  body {
+    margin: 0;
+    padding: 8px;
+    font-size: 9px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .voucher-modal-overlay,
+  .voucher-modal,
+  .voucher-modal-header,
+  .voucher-actions,
+  .voucher-exit-section {
+    display: none !important;
+  }
+  
+  .voucher-container {
+    max-width: none !important;
+    width: 90% !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    box-shadow: none !important;
+    background: white !important;
+    max-height: none !important;
+    font-size: 9px !important;
+    page-break-inside: avoid;
+    height: fit-content;
+    overflow: visible !important;
+  }
+  
+  /* FORCE 2-column layout for print */
+  .voucher-content-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    page-break-inside: avoid;
+  }
+  
+  .voucher-client,
+  .voucher-service,
+  .voucher-pricing,
+  .voucher-payments {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    padding: 8px !important;
+    page-break-inside: avoid;
+    margin-bottom: 8px !important;
+  }
+  
+  .company-info h1 {
+    font-size: 14px !important;
+  }
+  
+  .voucher-title {
+    font-size: 12px !important;
+  }
+  
+  .section-title {
+    font-size: 9px !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .client-details p,
+  .service-details p {
+    font-size: 8px !important;
+    margin: 2px 0 !important;
+  }
+  
+  .pricing-row {
+    font-size: 8px !important;
+    padding: 4px 0 !important;
+  }
+  
+  .payment-info-compact {
+    font-size: 7px !important;
+  }
+  
+  .payment-amount-compact {
+    font-size: 8px !important;
+  }
+  
+  .voucher-footer {
+    margin-top: 15px !important;
+    padding-top: 10px !important;
+  }
+  
+  .footer-contact h4 {
+    font-size: 9px !important;
+  }
+  
+  .footer-contact p {
+    font-size: 8px !important;
+  }
+  
+  .voucher-terms p {
+    font-size: 7px !important;
+  }
+  
+  .supplements-section {
+    padding: 4px !important;
+  }
+  
+  .supplements-list {
+    font-size: 7px !important;
+  }
+  
+  .supplements-total {
+    font-size: 8px !important;
+  }
+}
