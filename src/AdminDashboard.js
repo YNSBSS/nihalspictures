@@ -12,6 +12,7 @@ import MediaManagement from './MediaManagement';
 import './AdminDashboard.css';
 import { LayoutDashboard, Calendar, Users, Camera, Menu, X, Bell, TrendingUp, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, LogOut, DollarSign, TrendingDown, Image, BarChart } from 'lucide-react';
 import StatsManagement from './StatsManagement';
+import AvailabilityCalendar from './AvailabilityCalendar';
 
 
 const AdminDashboard = () => {
@@ -395,6 +396,7 @@ const AdminDashboard = () => {
   const sidebarItems = [
     { id: 'vue-generale', label: 'Vue Générale', icon: LayoutDashboard },
     { id: 'gestion-reservations', label: 'Gestion Réservations', icon: Calendar },
+    { id: 'calendrier-disponibilite', label: 'Calendrier Disponibilité', icon: Calendar }, // NEW LINE
     { id: 'services-tarifs', label: 'Services & Tarifs', icon: Camera },
     { id: 'gestion-media', label: 'Gestion Médias', icon: Image },
     { id: 'gestion-stats', label: 'Statistiques Site', icon: BarChart },
@@ -492,6 +494,7 @@ const AdminDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'gestion-reservations': return <BookingsManagement />;
+      case 'calendrier-disponibilite': return <AvailabilityCalendar />; // NEW LINE
       case 'services-tarifs': return <ServicesManagement />;
       case 'gestion-media': return <MediaManagement />;
       case 'gestion-stats': return <StatsManagement />;
